@@ -60,7 +60,7 @@ public class View extends JFrame implements IObserver<Model>, KeyListener {
 
 		activePanel.add(label);
 
-		label.setText("Doodle jump");
+		label.setText("Frogger");
 		label.setHorizontalAlignment(JLabel.CENTER);
 		label.setFont(new Font("Serif", Font.BOLD, 32));
 
