@@ -1,5 +1,5 @@
 package frogger.model;
 
 public enum ObjectTypeEnum {
-	DOODLER, PLATFORM
+	FROG, WOOD, LEAF, GROUND
 }

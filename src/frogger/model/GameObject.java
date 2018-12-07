@@ -2,25 +2,26 @@ package frogger.model;
 
 import java.awt.Rectangle;
 
-import frogger.utilClasses.Constants;
+import frogger.utilClasses.GameStaticValues;
 
-public abstract class GameObject extends Thread {
+public class GameObject extends Thread {
 	private Rectangle objectRectangle = null;
 	private double dx = 0;
 	private double dy = 0;
-	private int gravity = Constants.GRAVITY;
+	private int gravity = GameStaticValues.GRAVITY;
 
 	private boolean isObjectAlive = true;
 	private ObjectTypeEnum objectType;
 
-	public GameObject(int x, int y, int width, int height, int dx, int dy) {
+	public GameObject(int x, int y, int width, int height, ObjectTypeEnum objectType, int dx, int dy) {
 		this.objectRectangle = new Rectangle(x, y, width, height);
 		this.dx = dx;
 		this.dy = dy;
+		this.objectType = objectType;
 	}
 
-	public GameObject(int x, int y, int width, int height) {
-		this(x, y, width, height, 0, 0);
+	public GameObject(int x, int y, int width, int height, ObjectTypeEnum objectType) {
+		this(x, y, width, height, objectType, 0, 0);
 	}
 
 	public Rectangle getObjectRectangle() {
@@ -87,8 +88,14 @@ public abstract class GameObject extends Thread {
 	public void move() {
 		this.objectRectangle.setLocation((int) (this.objectRectangle.x + dx), (int) (this.objectRectangle.y + dy));
 
-		if (this.objectRectangle.y >= Constants.GAME_WINDOW_SIZE.getHeight()) {
+		if (this.objectRectangle.y >= GameStaticValues.GAME_WINDOW_SIZE.getHeight()) {
 			this.setObjectAlive(false);
+		} else {
+			if (this.getObjectRectangle().x >= GameStaticValues.GAME_WINDOW_SIZE.getWidth()) {
+				this.getObjectRectangle().x = 0;
+			} else if (this.getObjectRectangle().x <= 0) {
+				this.getObjectRectangle().x = (int) GameStaticValues.GAME_WINDOW_SIZE.getWidth();
+			}
 		}
 
 	}
@@ -99,7 +106,7 @@ public abstract class GameObject extends Thread {
 			this.move();
 
 			try {
-				Thread.sleep(Constants.THREAD_SLEEP_TIME);
+				Thread.sleep(GameStaticValues.THREAD_SLEEP_TIME);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

@@ -1,4 +1,4 @@
-package frogger.view;
+package frogger;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -10,9 +10,8 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 
-import frogger.controller.GameController;
 import frogger.model.ModelChangeData;
-import frogger.utilClasses.Constants;
+import frogger.utilClasses.GameStaticValues;
 import frogger.utilClasses.Observer;
 
 public class GameView extends JFrame implements Observer, KeyListener {
@@ -35,8 +34,8 @@ public class GameView extends JFrame implements Observer, KeyListener {
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setResizable(false);
 
-		this.setSize(Constants.GAME_WINDOW_SIZE);
-		this.setLocation(Constants.TK.getScreenSize().width / 3, 0);
+		this.setSize(GameStaticValues.GAME_WINDOW_SIZE);
+		this.setLocation(GameStaticValues.TK.getScreenSize().width / 3, 0);
 
 		this.setVisible(true);
 
@@ -95,7 +94,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
 		case OBJECT_СREATE:
 
 			switch (changeData.getObjectType()) {
-			case DOODLER:
+			case FROG:
 
 				this.remove(activePanel);
 
@@ -162,7 +161,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
 		case OBJECT_MOVE:
 
 			switch (changeData.getObjectType()) {
-			case DOODLER:
+			case FROG:
 
 				doodlerLabel.setLocation(changeData.getAffectedValues()[0], changeData.getAffectedValues()[1]);
 
@@ -261,7 +260,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
 		case OBJECT_DESTROY:
 
 			switch (changeData.getObjectType()) {
-			case DOODLER:
+			case FROG:
 
 				doodlerLabel = null;
 
@@ -366,9 +365,9 @@ public class GameView extends JFrame implements Observer, KeyListener {
 			}
 		} else {
 			if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-				controller.changeDx(-Constants.DOODLER_HORIZONTAL_SPEED);
+				controller.changeDx(-GameStaticValues.DOODLER_HORIZONTAL_SPEED);
 			} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-				controller.changeDx(Constants.DOODLER_HORIZONTAL_SPEED);
+				controller.changeDx(GameStaticValues.DOODLER_HORIZONTAL_SPEED);
 			} else if (e.getKeyCode() == KeyEvent.VK_UP) {
 				//controller.doodlerShoot();
 			}

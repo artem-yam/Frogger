@@ -1,9 +1,8 @@
-package frogger.controller;
+package frogger;
 
 import frogger.model.GameModel;
 import frogger.model.ObjectTypeEnum;
 import frogger.utilClasses.Observer;
-import frogger.view.GameView;
 
 public class GameController {
 	private GameModel model;
@@ -25,7 +24,7 @@ public class GameController {
 	}
 
 	public void changeDx(int value) {
-		model.changeDoodlerDx(value);
+		model.changeFrogHorizontalSpeed(value);
 	}
 
 	public void changeObjectSize(ObjectTypeEnum objectType, int... values) {

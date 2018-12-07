@@ -7,15 +7,13 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import frogger.model.ModelChangeEventEnum;
-import frogger.model.platforms.HorizontalMovingPlatform;
-import frogger.model.platforms.Platform;
-import frogger.utilClasses.Constants;
+import frogger.utilClasses.GameStaticValues;
 import frogger.utilClasses.Observable;
 import frogger.utilClasses.Observer;
 
 public class GameModel extends Thread implements Observable {
 
-	private Frog doodler;
+	private Frog frog;
 	private List<GameObject> gameObjects = new CopyOnWriteArrayList<GameObject>();
 	private final List<Observer> observers = new ArrayList<Observer>();
 
@@ -28,20 +26,12 @@ public class GameModel extends Thread implements Observable {
 		super();
 	}
 
-	public int getGameGravity() {
-		return gameGravity;
-	}
-
-	public void setGameGravity(int gameGravity) {
-		this.gameGravity = gameGravity;
-	}
-
 	public Frog getDoodler() {
-		return doodler;
+		return frog;
 	}
 
 	public void setDoodler(Frog doodler) {
-		this.doodler = doodler;
+		this.frog = doodler;
 	}
 
 	public Collection<Observer> getSubscribers() {
@@ -71,65 +61,51 @@ public class GameModel extends Thread implements Observable {
 	}
 
 	@Override
-	public synchronized void notifyObservers(ModelChangeEventEnum changeType, ObjectTypeEnum objectType,
-			int... values) {
+	public void notifyObservers(ModelChangeEventEnum changeType, ObjectTypeEnum objectType, int... values) {
 		for (Observer observer : observers)
 			observer.handleEvent(new ModelChangeData(changeType, objectType, values));
 	}
 
 	private void initializeVariables() {
-		this.gameGravity = Constants.GRAVITY;
 		this.userScore = 0;
-
 		gameObjects = new ArrayList<GameObject>();
-
 		isGameActive = false;
-
 	}
 
 	private void gameStart() {
 
 		initializeVariables();
 
-		this.doodler = new Frog(Constants.DOODLER_START_X, Constants.DOODLER_START_Y);
+		this.frog = new Frog(GameStaticValues.DOODLER_START_X, GameStaticValues.DOODLER_START_Y);
 
-		Thread thread = new Thread(doodler);
+		Thread thread = new Thread(frog);
 		thread.start();
-		doodler.start();
+		frog.start();
 
-		notifyObservers(ModelChangeEventEnum.OBJECT_СREATE, ObjectTypeEnum.DOODLER, doodler.getObjectRectangle().x,
-				doodler.getObjectRectangle().y, doodler.getObjectRectangle().width,
-				doodler.getObjectRectangle().height);
+		notifyObservers(ModelChangeEventEnum.OBJECT_СREATE, ObjectTypeEnum.FROG, frog.getObjectRectangle().x,
+				frog.getObjectRectangle().y, frog.getObjectRectangle().width, frog.getObjectRectangle().height);
 
 		gameObjects = new ArrayList<GameObject>();
 
-		Platform plat = new Platform(Constants.START_PLATFORM_X, Constants.START_PLATFORM_Y);
-		gameObjects.add(plat);
+	}
 
-		plat.start();
+	// TODO
+	private void formStartGround() {
+		for (int i = 0; i < GameStaticValues.START_PLATFORMS_COUNT - gameObjects.size(); i++) {
 
-		notifyObservers(ModelChangeEventEnum.OBJECT_СREATE, ObjectTypeEnum.PLATFORM,
-				((GameObject) gameObjects.get(0)).getObjectRectangle().x,
-				((GameObject) gameObjects.get(0)).getObjectRectangle().y,
-				((Platform) gameObjects.get(0)).getType().ordinal());
+			GameObject plat = new GameObject(x, y, width, height, ObjectTypeEnum);
+			gameObjects.add(plat);
 
-		Platform plat2 = new Platform(Constants.START_PLATFORM_X,
-				Constants.START_PLATFORM_Y - Constants.MAX_DISTANCE_BETWEEN_PLATFORMS);
-		gameObjects.add(plat2);
+			plat.start();
 
-		plat2.start();
+			notifyObservers(ModelChangeEventEnum.OBJECT_СREATE, ObjectTypeEnum.PLATFORM,
+					((GameObject) gameObjects.get(0)).getObjectRectangle().x,
+					((GameObject) gameObjects.get(0)).getObjectRectangle().y,
+					((Block) gameObjects.get(0)).getType().ordinal());
 
-		notifyObservers(ModelChangeEventEnum.OBJECT_СREATE, ObjectTypeEnum.PLATFORM,
-				((GameObject) gameObjects.get(1)).getObjectRectangle().x,
-				((GameObject) gameObjects.get(1)).getObjectRectangle().y,
-				((Platform) gameObjects.get(1)).getType().ordinal());
-
-		for (int i = 0; i < Constants.START_PLATFORMS_COUNT - gameObjects.size(); i++) {
-
-			generateNewPlatform(true, true);
+			generateNewBlock(true, true);
 
 		}
-
 	}
 
 	private void deleteDeadObjects() {
@@ -139,13 +115,7 @@ public class GameModel extends Thread implements Observable {
 
 			if (!gameObject.isAlive()) {
 
-				switch (gameObject.getObjectType()) {
-				case PLATFORM:
-					notifyObservers(ModelChangeEventEnum.OBJECT_DESTROY, ObjectTypeEnum.PLATFORM, index);
-					break;
-				default:
-					break;
-				}
+				notifyObservers(ModelChangeEventEnum.OBJECT_DESTROY, gameObject.getObjectType(), index);
 
 				gameObjects.remove(index);
 
@@ -153,114 +123,64 @@ public class GameModel extends Thread implements Observable {
 		}
 	}
 
-	private int highestPlatformPosition() {
-		GameObject highestPlatform = null;
+	// TODO
+	private void generateNewBlock(boolean gameStart, boolean isRequired) {
+		GameObject newBlock = null;
 
-		for (GameObject object : gameObjects) {
+		int blockX = GameStaticValues.RND
+				.nextInt((int) GameStaticValues.GAME_WINDOW_SIZE.getWidth() - GameStaticValues.PLATFORM_WIDTH);
 
-			if (object.getObjectType().equals(ObjectTypeEnum.PLATFORM)) {
-
-				if (highestPlatform == null) {
-					highestPlatform = object;
-				} else if (object.getObjectRectangle().y < highestPlatform.getObjectRectangle().y) {
-					highestPlatform = object;
-				}
-			}
-		}
-
-		return highestPlatform.getObjectRectangle().y;
-	}
-
-	private void generateNewPlatform(boolean gameStart, boolean isRequired) {
-		Platform newPlatform = null;
-
-		int platformX = Constants.RND.nextInt((int) Constants.GAME_WINDOW_SIZE.getWidth() - Constants.PLATFORM_WIDTH);
-
-		int platformY = 0;
+		int blockY = 0;
 		if (gameStart) {
 
-			if (this.isNewPlatformRequired()) {
-				platformY = highestPlatformPosition() - Constants.MAX_DISTANCE_BETWEEN_PLATFORMS;
-			} else {
-				platformY = Constants.RND.nextInt((int) Constants.GAME_WINDOW_SIZE.getHeight());
-			}
+			blockY = GameStaticValues.RND.nextInt((int) GameStaticValues.GAME_WINDOW_SIZE.getHeight());
+
 		}
 
-		double rnd = Constants.RND.nextDouble();
+		double rnd = GameStaticValues.RND.nextDouble();
 
-		if (!gameStart) {
-			if (rnd < 0.05) {
-				newPlatform = new HorizontalMovingPlatform(platformX, platformY);
-			} else {
-				newPlatform = new Platform(platformX, platformY);
-			}
+		if (rnd < 0.3) {
+			newBlock = new GameObject(blockX, blockY, width, height, ObjectTypeEnum.LEAF);
 		} else {
-			newPlatform = new Platform(platformX, platformY);
+			newBlock = new GameObject(blockX, blockY, width, height, ObjectTypeEnum.WOOD);
 		}
 
-		gameObjects.add(newPlatform);
+		gameObjects.add(newBlock);
 
-		notifyObservers(ModelChangeEventEnum.OBJECT_СREATE, ObjectTypeEnum.PLATFORM, platformX, platformY,
-				newPlatform.getType().ordinal());
+		notifyObservers(ModelChangeEventEnum.OBJECT_СREATE, newBlock.getObjectType(), blockX, blockY);
 
-		newPlatform.start();
+		newBlock.start();
 
 	}
 
-	private boolean isNewPlatformRequired() {
-		double highestPlatformY = Constants.GAME_WINDOW_SIZE.height;
-
-		for (GameObject object : gameObjects) {
-
-			if (object.getObjectType().equals(ObjectTypeEnum.PLATFORM)
-					&& object.getObjectRectangle().y < highestPlatformY)
-				highestPlatformY = object.getObjectRectangle().y;
-
-		}
-
-		if (highestPlatformY > Constants.MAX_DISTANCE_BETWEEN_PLATFORMS)
-			return true;
-		else
-			return false;
-	}
-
+	// TODO
 	private void generateNewObjects() {
-		if (Constants.RND.nextDouble() < 0.05 || isNewPlatformRequired()) {
+		if (GameStaticValues.RND.nextDouble() < 0.05) {
 
-			generateNewPlatform(false, isNewPlatformRequired());
+			generateNewBlock(false, isNewPlatformRequired());
 
 		}
 
 	}
 
-	public void changeDoodlerDx(int dx) {
-		doodler.setDx(dx);
+	public void changeFrogHorizontalSpeed(int dx) {
+		frog.setDx(dx);
 	}
 
 	public void changeObjectSize(ObjectTypeEnum objectType, int... values) {
-		if (objectType == ObjectTypeEnum.DOODLER) {
-			doodler.getObjectRectangle().setSize(values[0], values[1]);
+		if (objectType == ObjectTypeEnum.FROG) {
+			frog.getObjectRectangle().setSize(values[0], values[1]);
 		} else {
 			gameObjects.get(values[2]).getObjectRectangle().setSize(values[0], values[1]);
 		}
 	}
 
 	public void changeObjectLocation(ObjectTypeEnum objectType, int... values) {
-		if (objectType == ObjectTypeEnum.DOODLER) {
-			doodler.getObjectRectangle().setLocation(values[0], values[1]);
+		if (objectType == ObjectTypeEnum.FROG) {
+			frog.getObjectRectangle().setLocation(values[0], values[1]);
 		} else {
 			gameObjects.get(values[2]).getObjectRectangle().setLocation(values[0], values[1]);
 		}
-	}
-
-	public void normalizeObjectsMovement(int gravity) {
-		this.gameGravity = gravity;
-
-		for (GameObject gameObject : gameObjects) {
-			gameObject.normalizeMovement(this.gameGravity);
-		}
-
-		doodler.doodlerJumping();
 	}
 
 	@Override
@@ -276,22 +196,22 @@ public class GameModel extends Thread implements Observable {
 
 			gameStart();
 
-			long doodlerHighestPosition = (long) doodler.getObjectRectangle().getY();
+			long doodlerHighestPosition = (long) frog.getObjectRectangle().getY();
 
-			while (doodler.isObjectAlive()) {
+			while (frog.isObjectAlive()) {
 
 				generateNewObjects();
 
-				notifyObservers(ModelChangeEventEnum.OBJECT_MOVE, ObjectTypeEnum.DOODLER,
-						doodler.getObjectRectangle().x, doodler.getObjectRectangle().y, (int) doodler.getDx());
+				notifyObservers(ModelChangeEventEnum.OBJECT_MOVE, ObjectTypeEnum.FROG, frog.getObjectRectangle().x,
+						frog.getObjectRectangle().y, (int) frog.getDx());
 
-				if (doodler.getObjectRectangle().getY() < doodlerHighestPosition) {
-					userScore += Math.abs(doodlerHighestPosition - doodler.getObjectRectangle().getY());
+				if (frog.getObjectRectangle().getY() < doodlerHighestPosition) {
+					userScore += Math.abs(doodlerHighestPosition - frog.getObjectRectangle().getY());
 
-					doodlerHighestPosition = (long) doodler.getObjectRectangle().getY();
+					doodlerHighestPosition = (long) frog.getObjectRectangle().getY();
 				}
 
-				notifyObservers(ModelChangeEventEnum.SCORE_CHANGE, ObjectTypeEnum.DOODLER, userScore);
+				notifyObservers(ModelChangeEventEnum.SCORE_CHANGE, ObjectTypeEnum.FROG, userScore);
 
 				doodlerHighestPosition += this.gameGravity;
 
@@ -299,24 +219,28 @@ public class GameModel extends Thread implements Observable {
 
 				for (GameObject gameObject : gameObjects) {
 
-					switch (gameObject.getObjectType()) {
-					case PLATFORM:
-						notifyObservers(ModelChangeEventEnum.OBJECT_MOVE, ObjectTypeEnum.PLATFORM,
-								gameObject.getObjectRectangle().x, gameObject.getObjectRectangle().y,
-								gameObjects.indexOf(gameObject));
+					notifyObservers(ModelChangeEventEnum.OBJECT_MOVE, gameObject.getObjectType(),
+							gameObject.getObjectRectangle().x, gameObject.getObjectRectangle().y,
+							gameObjects.indexOf(gameObject));
 
-						if (doodler.isFalling() && gameObject.getObjectRectangle()
-								.intersectsLine(new Line2D.Double(doodler.getObjectRectangle().getX(),
-										doodler.getObjectRectangle().getMaxY(), doodler.getObjectRectangle().getMaxX(),
-										doodler.getObjectRectangle().getMaxY()))) {
+					if (gameObject.getObjectRectangle()
+							.intersectsLine(new Line2D.Double(frog.getObjectRectangle().getX(),
+									frog.getObjectRectangle().getMaxY(), frog.getObjectRectangle().getMaxX(),
+									frog.getObjectRectangle().getMaxY()))) {
 
-							doodler.doodlerJumping();
+						frog.jump();
 
+						switch (gameObject.getObjectType()) {
+						case LEAF:
+							this.userScore += 50;
+							break;
+						case WOOD:
+							this.userScore += 1;
+							break;
+						default:
+							break;
 						}
 
-						break;
-					default:
-						break;
 					}
 				}
 
