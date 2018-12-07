@@ -15,10 +15,6 @@ public class HorizontalMovingPlatform extends Platform {
 
 		this.setDx(Constants.MOVING_PLATFORM_SPEED);
 
-		if (this.getBonus() != null) {
-			this.getBonus().setDx(this.getDx());
-			this.getBonus().setDy(this.getDy());
-		}
 	}
 
 	public double getLeftMovePosition() {
@@ -43,16 +39,8 @@ public class HorizontalMovingPlatform extends Platform {
 
 		if (this.getObjectRectangle().getX() < Constants.PLATFORM_HORISONTAL_MOVE_START_POINT) {
 			this.setDx(Math.abs(this.getDx()));
-
-			if (this.getBonus() != null) {
-				this.getBonus().setDx(this.getDx());
-			}
 		} else if (this.getObjectRectangle().getMaxX() > Constants.PLATFORM_HORISONTAL_MOVE_END_POINT) {
 			this.setDx(-Math.abs(this.getDx()));
-
-			if (this.getBonus() != null) {
-				this.getBonus().setDx(this.getDx());
-			}
 		}
 	}
 

@@ -10,14 +10,12 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 
-import frogger.controller.Controller;
-import frogger.model.Model;
+import frogger.controller.GameController;
 import frogger.model.ModelChangeData;
 import frogger.utilClasses.Constants;
-import frogger.utilClasses.IObservable;
-import frogger.utilClasses.IObserver;
+import frogger.utilClasses.Observer;
 
-public class View extends JFrame implements IObserver<Model>, KeyListener {
+public class GameView extends JFrame implements Observer, KeyListener {
 	private static final long serialVersionUID = 1L;
 
 	private boolean isGameActive = false;
@@ -28,9 +26,9 @@ public class View extends JFrame implements IObserver<Model>, KeyListener {
 
 	private List<JLabel> objectLabels = new ArrayList<JLabel>();
 
-	private Controller controller;
+	private GameController controller;
 
-	public View(Controller controller) {
+	public GameView(GameController controller) {
 		super();
 
 		this.controller = controller;
@@ -42,7 +40,7 @@ public class View extends JFrame implements IObserver<Model>, KeyListener {
 
 		this.setVisible(true);
 
-		controller.subscribeObserver(this);
+		controller.addObserverToModel(this);
 
 		this.addKeyListener(this);
 
@@ -79,36 +77,16 @@ public class View extends JFrame implements IObserver<Model>, KeyListener {
 
 	}
 
-	public Controller getContr() {
+	public GameController getContr() {
 		return controller;
 	}
 
-	public void setContr(Controller contr) {
+	public void setContr(GameController contr) {
 		this.controller = contr;
 	}
 
 	@Override
-	public void subscribe(IObservable<Model> observable) {
-		Model model = ((Model) observable);
-		if (observable == null)
-			throw new NullPointerException();
-		if (model.getSubscribers().contains(this))
-			return;
-		model.getSubscribers().add(this);
-	}
-
-	@Override
-	public void unsubscribe(IObservable<Model> observable) {
-		Model model = ((Model) observable);
-		if (observable == null)
-			throw new NullPointerException();
-		if (!model.getSubscribers().contains(this))
-			return;
-		model.getSubscribers().remove(this);
-	}
-
-	@Override
-	public void observableChanged(Object object) {
+	public void handleEvent(Object object) {
 		ModelChangeData changeData = (ModelChangeData) object;
 		Icon icon = null;
 		JLabel label = null;
@@ -171,88 +149,6 @@ public class View extends JFrame implements IObserver<Model>, KeyListener {
 
 				platformLabel.setBounds(changeData.getAffectedValues()[0], changeData.getAffectedValues()[1],
 						icon.getIconWidth(), icon.getIconHeight());
-				controller.changeObjectSize(changeData.getObjectType(), icon.getIconWidth(), icon.getIconHeight(),
-						objectLabels.size() - 1);
-
-				break;
-			case ENEMY:
-
-				switch (Constants.RND.nextInt(5)) {
-				case (0):
-					icon = new ImageIcon("resourses/images/enemies/monster1.png");
-					break;
-				case (1):
-					icon = new ImageIcon("resourses/images/enemies/monster2.png");
-					break;
-				case (2):
-					icon = new ImageIcon("resourses/images/enemies/monster3.png");
-					break;
-				case (3):
-					icon = new ImageIcon("resourses/images/enemies/monster4.png");
-					break;
-				case (4):
-					icon = new ImageIcon("resourses/images/enemies/monster5.png");
-					break;
-				}
-
-				JLabel enemyLabel = new JLabel(icon);
-
-				objectLabels.add(enemyLabel);
-				activePanel.add(enemyLabel);
-
-				enemyLabel.setBounds(changeData.getAffectedValues()[0], 0, icon.getIconWidth(), icon.getIconHeight());
-				controller.changeObjectSize(changeData.getObjectType(), icon.getIconWidth(), icon.getIconHeight(),
-						objectLabels.size() - 1);
-
-				break;
-			case BULLET:
-				icon = new ImageIcon("resourses/images/bullet.png");
-
-				JLabel bulletLabel = new JLabel(icon);
-
-				objectLabels.add(bulletLabel);
-				activePanel.add(bulletLabel);
-
-				bulletLabel.setBounds(changeData.getAffectedValues()[0], changeData.getAffectedValues()[1],
-						icon.getIconWidth(), icon.getIconHeight());
-				controller.changeObjectSize(changeData.getObjectType(), icon.getIconWidth(), icon.getIconHeight(),
-						objectLabels.size() - 1);
-
-				break;
-			case BONUS:
-
-				switch (changeData.getAffectedValues()[0]) {
-				case (0):
-					icon = new ImageIcon("resourses/images/bonuses/spring.png");
-					break;
-				case (1):
-					icon = new ImageIcon("resourses/images/bonuses/shield.png");
-					break;
-				case (2):
-					icon = new ImageIcon("resourses/images/bonuses/jetpack.png");
-					break;
-				case (3):
-					icon = new ImageIcon("resourses/images/bonuses/spring_shoes.png");
-					break;
-				}
-
-				JLabel bonusLabel = new JLabel(icon);
-
-				objectLabels.add(bonusLabel);
-				activePanel.add(bonusLabel);
-
-				JLabel ownerPlatformLabel = objectLabels.get(changeData.getAffectedValues()[1]);
-
-				int bonusXPosition = (int) ownerPlatformLabel.getLocation().getX()
-						+ Constants.RND.nextInt(ownerPlatformLabel.getWidth() - icon.getIconWidth());
-				int bonusYPosition = (int) ((ownerPlatformLabel.getLocation().getY() - icon.getIconHeight()));
-
-				bonusLabel.setBounds(bonusXPosition, bonusYPosition, icon.getIconWidth(), icon.getIconHeight());
-
-				bonusLabel.setSize(icon.getIconWidth(), icon.getIconHeight());
-
-				controller.changeObjectLocation(changeData.getObjectType(), bonusXPosition, bonusYPosition,
-						objectLabels.size() - 1);
 				controller.changeObjectSize(changeData.getObjectType(), icon.getIconWidth(), icon.getIconHeight(),
 						objectLabels.size() - 1);
 
@@ -356,32 +252,6 @@ public class View extends JFrame implements IObserver<Model>, KeyListener {
 				}
 
 				break;
-			case ENEMY:
-
-				objectLabels.get(changeData.getAffectedValues()[2]).setLocation(changeData.getAffectedValues()[0],
-						changeData.getAffectedValues()[1]);
-
-				break;
-			case BULLET:
-
-				objectLabels.get(changeData.getAffectedValues()[2]).setLocation(changeData.getAffectedValues()[0],
-						changeData.getAffectedValues()[1]);
-
-				break;
-			case BONUS:
-
-				objectLabels.get(changeData.getAffectedValues()[2]).setLocation(changeData.getAffectedValues()[0],
-						changeData.getAffectedValues()[1]);
-
-				if (changeData.getAffectedValues().length >= 4 && changeData.getAffectedValues()[3] == 1) {
-					objectLabels.get(changeData.getAffectedValues()[2]).setLocation(doodlerLabel.getLocation().x,
-							doodlerLabel.getLocation().y);
-
-					controller.changeObjectLocation(changeData.getObjectType(), doodlerLabel.getLocation().x,
-							doodlerLabel.getLocation().y, changeData.getAffectedValues()[2]);
-				}
-
-				break;
 			default:
 				break;
 
@@ -397,24 +267,6 @@ public class View extends JFrame implements IObserver<Model>, KeyListener {
 
 				break;
 			case PLATFORM:
-
-				activePanel.remove(objectLabels.get(changeData.getAffectedValues()[0]));
-				objectLabels.remove(changeData.getAffectedValues()[0]);
-
-				break;
-			case ENEMY:
-
-				activePanel.remove(objectLabels.get(changeData.getAffectedValues()[0]));
-				objectLabels.remove(changeData.getAffectedValues()[0]);
-
-				break;
-			case BULLET:
-
-				activePanel.remove(objectLabels.get(changeData.getAffectedValues()[0]));
-				objectLabels.remove(changeData.getAffectedValues()[0]);
-
-				break;
-			case BONUS:
 
 				activePanel.remove(objectLabels.get(changeData.getAffectedValues()[0]));
 				objectLabels.remove(changeData.getAffectedValues()[0]);
@@ -517,8 +369,8 @@ public class View extends JFrame implements IObserver<Model>, KeyListener {
 				controller.changeDx(-Constants.DOODLER_HORIZONTAL_SPEED);
 			} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
 				controller.changeDx(Constants.DOODLER_HORIZONTAL_SPEED);
-			} else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_SPACE) {
-				controller.doodlerShoot();
+			} else if (e.getKeyCode() == KeyEvent.VK_UP) {
+				//controller.doodlerShoot();
 			}
 		}
 	}
@@ -529,8 +381,8 @@ public class View extends JFrame implements IObserver<Model>, KeyListener {
 			controller.changeDx(0);
 		} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
 			controller.changeDx(0);
-		} else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_SPACE) {
-			controller.doodlerStopShoot();
+		} else if (e.getKeyCode() == KeyEvent.VK_UP) {
+			//controller.doodlerStopShoot();
 		}
 	}
 }

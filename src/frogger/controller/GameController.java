@@ -1,21 +1,27 @@
 package frogger.controller;
 
-import frogger.model.Model;
+import frogger.model.GameModel;
 import frogger.model.ObjectTypeEnum;
-import frogger.utilClasses.IObserver;
-import frogger.utilClasses.ISubscribeHelper;
+import frogger.utilClasses.Observer;
+import frogger.view.GameView;
 
-public class Controller implements ISubscribeHelper<Model> {
-	private Model model;
+public class GameController {
+	private GameModel model;
 
-	public Controller(Model model) {
+	public GameController(GameModel model) {
 		super();
 		this.model = model;
 	}
 
-	@Override
-	public void subscribeObserver(IObserver<Model> observer) {
-		observer.subscribe(this.model);
+	public static void main(String[] args) {
+		GameModel model = new GameModel();
+		GameController controller = new GameController(model);
+		GameView view = new GameView(controller);
+		model.start();
+	}
+
+	public void addObserverToModel(Observer observer) {
+		model.addObserver(observer);
 	}
 
 	public void changeDx(int value) {
@@ -28,14 +34,6 @@ public class Controller implements ISubscribeHelper<Model> {
 
 	public void changeObjectLocation(ObjectTypeEnum objectType, int... values) {
 		model.changeObjectLocation(objectType, values);
-	}
-
-	public void doodlerShoot() {
-		model.doodlerShoot(false);
-	}
-
-	public void doodlerStopShoot() {
-		model.doodlerShoot(true);
 	}
 
 	public void startGame() {
