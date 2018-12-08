@@ -1,13 +1,10 @@
 package frogger.utilClasses;
 
-import frogger.model.ModelChangeEventEnum;
-import frogger.model.ObjectTypeEnum;
+import frogger.model.ModelChangeData;
 
 public interface Observable {
 
-	void addObserver(Observer observer);
+    void addObserver(Observer observer);
 
-	void removeObserver(Observer observer);
-	
-	void notifyObservers(ModelChangeEventEnum changeType, ObjectTypeEnum objectType, int... values);
+    void notifyObservers(ModelChangeData changeData);
 }

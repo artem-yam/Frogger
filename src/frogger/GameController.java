@@ -1,42 +1,50 @@
 package frogger;
 
 import frogger.model.GameModel;
-import frogger.model.ObjectTypeEnum;
+import frogger.model.GameObject;
 import frogger.utilClasses.Observer;
 
 public class GameController {
-	private GameModel model;
+    private GameModel model;
 
-	public GameController(GameModel model) {
-		super();
-		this.model = model;
-	}
+    public GameController(GameModel model) {
+        super();
+        this.model = model;
+    }
 
-	public static void main(String[] args) {
-		GameModel model = new GameModel();
-		GameController controller = new GameController(model);
-		GameView view = new GameView(controller);
-		model.start();
-	}
+    public static void main(String[] args) {
+        GameModel model = new GameModel();
+        GameController controller = new GameController(model);
+        GameView view = new GameView(controller);
+        model.start();
+    }
 
-	public void addObserverToModel(Observer observer) {
-		model.addObserver(observer);
-	}
+    public void addObserverToModel(Observer observer) {
+        model.addObserver(observer);
+    }
 
-	public void changeDx(int value) {
-		model.changeFrogHorizontalSpeed(value);
-	}
+    public void jumpLeft() {
+        model.frogJumpLeft();
+    }
 
-	public void changeObjectSize(ObjectTypeEnum objectType, int... values) {
-		model.changeObjectSize(objectType, values);
-	}
+    public void jumpRight() {
+        model.frogJumpRight();
+    }
 
-	public void changeObjectLocation(ObjectTypeEnum objectType, int... values) {
-		model.changeObjectLocation(objectType, values);
-	}
+    public void jumpUp() {
+        model.frogJumpUp();
+    }
 
-	public void startGame() {
-		model.setGameActive(true);
-	}
+    public void jumpDown() {
+        model.frogJumpDown();
+    }
+
+    public void changeObjectSize(GameObject object, int width, int height) {
+        model.changeObjectSize(object, width, height);
+    }
+
+    public void startGame() {
+        model.setGameActive(true);
+    }
 
 }

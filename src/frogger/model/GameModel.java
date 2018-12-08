@@ -1,261 +1,239 @@
 package frogger.model;
 
-import java.awt.geom.Line2D;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import frogger.model.ModelChangeEventEnum;
 import frogger.utilClasses.GameStaticValues;
 import frogger.utilClasses.Observable;
 import frogger.utilClasses.Observer;
 
+import java.awt.geom.Line2D;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 public class GameModel extends Thread implements Observable {
 
-	private Frog frog;
-	private List<GameObject> gameObjects = new CopyOnWriteArrayList<GameObject>();
-	private final List<Observer> observers = new ArrayList<Observer>();
+    private final List<Observer> observers = new ArrayList<Observer>();
+    private Frog frog;
+    private List<GameObject> gameObjects = new CopyOnWriteArrayList<GameObject>();
+    private int userScore = 0;
 
-	private int gameGravity = 0;
-	private int userScore = 0;
+    private boolean isGameActive = false;
 
-	private boolean isGameActive = false;
+    public GameModel() {
+        super();
+    }
 
-	public GameModel() {
-		super();
-	}
+    public void setGameActive(boolean isGameActive) {
+        this.isGameActive = isGameActive;
+    }
 
-	public Frog getDoodler() {
-		return frog;
-	}
+    @Override
+    public void addObserver(Observer observer) {
+        if (this.observers.contains(observer))
+            return;
+        this.observers.add(observer);
+    }
 
-	public void setDoodler(Frog doodler) {
-		this.frog = doodler;
-	}
+    @Override
+    public void notifyObservers(ModelChangeData changeData) {
+        for (Observer observer : observers)
+            observer.handleEvent(changeData);
+    }
 
-	public Collection<Observer> getSubscribers() {
-		return observers;
-	}
+    private void initializeVariables() {
+        this.userScore = 0;
+        gameObjects = new ArrayList<GameObject>();
+        isGameActive = false;
+    }
 
-	public boolean isGameActive() {
-		return isGameActive;
-	}
+    private void gameStart() {
 
-	public void setGameActive(boolean isGameActive) {
-		this.isGameActive = isGameActive;
-	}
+        initializeVariables();
 
-	@Override
-	public void addObserver(Observer observer) {
-		if (this.observers.contains(observer))
-			return;
-		this.observers.add(observer);
-	}
+        this.frog = new Frog(GameStaticValues.DOODLER_START_X, GameStaticValues.DOODLER_START_Y);
 
-	@Override
-	public void removeObserver(Observer observer) {
-		if (!this.observers.contains(observer))
-			return;
-		this.observers.remove(observer);
-	}
+        Thread thread = new Thread(frog);
+        thread.start();
+        frog.start();
 
-	@Override
-	public void notifyObservers(ModelChangeEventEnum changeType, ObjectTypeEnum objectType, int... values) {
-		for (Observer observer : observers)
-			observer.handleEvent(new ModelChangeData(changeType, objectType, values));
-	}
+        notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_СREATE, this.frog));
 
-	private void initializeVariables() {
-		this.userScore = 0;
-		gameObjects = new ArrayList<GameObject>();
-		isGameActive = false;
-	}
+        gameObjects = new ArrayList<GameObject>();
 
-	private void gameStart() {
+        formStartGround();
+    }
 
-		initializeVariables();
+    private void formStartGround() {
+        for (int i = 1; i <= GameStaticValues.START_GROUND_ROWS; i++) {
+            formRowOfGround(i);
+        }
+    }
 
-		this.frog = new Frog(GameStaticValues.DOODLER_START_X, GameStaticValues.DOODLER_START_Y);
 
-		Thread thread = new Thread(frog);
-		thread.start();
-		frog.start();
+    private void formRowOfGround(int rowNumber) {
+        for (int i = 0; i < GameStaticValues.MAX_BLOCKS_COUNT_IN_ROW; i++) {
 
-		notifyObservers(ModelChangeEventEnum.OBJECT_СREATE, ObjectTypeEnum.FROG, frog.getObjectRectangle().x,
-				frog.getObjectRectangle().y, frog.getObjectRectangle().width, frog.getObjectRectangle().height);
+            GameObject ground = new GameObject(i * GameStaticValues.BLOCK_WIDTH,
+                    GameStaticValues.GAME_WINDOW_SIZE.height - rowNumber * GameStaticValues.BLOCK_HEIGHT,
+                    0, 0, ObjectTypes.GROUND);
 
-		gameObjects = new ArrayList<GameObject>();
+            gameObjects.add(ground);
 
-	}
+            ground.start();
 
-	// TODO
-	private void formStartGround() {
-		for (int i = 0; i < GameStaticValues.START_PLATFORMS_COUNT - gameObjects.size(); i++) {
+            notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_СREATE, ground));
 
-			GameObject plat = new GameObject(x, y, width, height, ObjectTypeEnum);
-			gameObjects.add(plat);
+        }
+    }
 
-			plat.start();
+    private void deleteDeadObjects() {
 
-			notifyObservers(ModelChangeEventEnum.OBJECT_СREATE, ObjectTypeEnum.PLATFORM,
-					((GameObject) gameObjects.get(0)).getObjectRectangle().x,
-					((GameObject) gameObjects.get(0)).getObjectRectangle().y,
-					((Block) gameObjects.get(0)).getType().ordinal());
+        for (int i = gameObjects.size() - 1; i >= 0; i--) {
+            GameObject gameObject = gameObjects.get(i);
 
-			generateNewBlock(true, true);
+            if (!gameObject.isAlive()) {
 
-		}
-	}
+                notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_DESTROY, gameObject, i));
 
-	private void deleteDeadObjects() {
+                gameObjects.remove(i);
 
-		for (int index = gameObjects.size() - 1; index >= 0; index--) {
-			GameObject gameObject = gameObjects.get(index);
+            }
+        }
+    }
 
-			if (!gameObject.isAlive()) {
+    // TODO
+    private void generateNewBlock(boolean gameStart, boolean isRequired) {
+        GameObject newBlock = null;
 
-				notifyObservers(ModelChangeEventEnum.OBJECT_DESTROY, gameObject.getObjectType(), index);
+        int blockX = GameStaticValues.RND
+                .nextInt((int) GameStaticValues.GAME_WINDOW_SIZE.getWidth() - GameStaticValues.BLOCK_WIDTH);
 
-				gameObjects.remove(index);
+        int blockY = 0;
+        if (gameStart) {
 
-			}
-		}
-	}
+            blockY = GameStaticValues.RND.nextInt((int) GameStaticValues.GAME_WINDOW_SIZE.getHeight());
 
-	// TODO
-	private void generateNewBlock(boolean gameStart, boolean isRequired) {
-		GameObject newBlock = null;
+        }
 
-		int blockX = GameStaticValues.RND
-				.nextInt((int) GameStaticValues.GAME_WINDOW_SIZE.getWidth() - GameStaticValues.PLATFORM_WIDTH);
+        double rnd = GameStaticValues.RND.nextDouble();
 
-		int blockY = 0;
-		if (gameStart) {
+        if (rnd < 0.3) {
+            //       newBlock = new GameObject(blockX, blockY, width, height, ObjectTypes.LEAF);
+        } else {
+            //      newBlock = new GameObject(blockX, blockY, width, height, ObjectTypes.WOOD);
+        }
 
-			blockY = GameStaticValues.RND.nextInt((int) GameStaticValues.GAME_WINDOW_SIZE.getHeight());
+        gameObjects.add(newBlock);
 
-		}
+        //    notifyObservers(ModelChangeEvents.OBJECT_СREATE, newBlock.getObject(), blockX, blockY);
 
-		double rnd = GameStaticValues.RND.nextDouble();
+        newBlock.start();
 
-		if (rnd < 0.3) {
-			newBlock = new GameObject(blockX, blockY, width, height, ObjectTypeEnum.LEAF);
-		} else {
-			newBlock = new GameObject(blockX, blockY, width, height, ObjectTypeEnum.WOOD);
-		}
+    }
 
-		gameObjects.add(newBlock);
+    // TODO
+    private void generateNewObjects() {
+        if (GameStaticValues.RND.nextDouble() < 0.05) {
 
-		notifyObservers(ModelChangeEventEnum.OBJECT_СREATE, newBlock.getObjectType(), blockX, blockY);
+            //       generateNewBlock(false, isNewPlatformRequired());
 
-		newBlock.start();
+        }
 
-	}
+    }
 
-	// TODO
-	private void generateNewObjects() {
-		if (GameStaticValues.RND.nextDouble() < 0.05) {
+    public void frogJumpLeft() {
+        frog.jump(JumpDirections.LEFT);
+    }
 
-			generateNewBlock(false, isNewPlatformRequired());
+    public void frogJumpRight() {
+        frog.jump(JumpDirections.RIGHT);
+    }
 
-		}
+    public void frogJumpUp() {
+        frog.jump(JumpDirections.UP);
+    }
 
-	}
+    public void frogJumpDown() {
+        frog.jump(JumpDirections.DOWN);
+    }
 
-	public void changeFrogHorizontalSpeed(int dx) {
-		frog.setDx(dx);
-	}
+    public void changeObjectSize(GameObject object, int width, int height) {
+        object.getObjectRectangle().setSize(width, height);
+    }
 
-	public void changeObjectSize(ObjectTypeEnum objectType, int... values) {
-		if (objectType == ObjectTypeEnum.FROG) {
-			frog.getObjectRectangle().setSize(values[0], values[1]);
-		} else {
-			gameObjects.get(values[2]).getObjectRectangle().setSize(values[0], values[1]);
-		}
-	}
+    @Override
+    public void start() {
 
-	public void changeObjectLocation(ObjectTypeEnum objectType, int... values) {
-		if (objectType == ObjectTypeEnum.FROG) {
-			frog.getObjectRectangle().setLocation(values[0], values[1]);
-		} else {
-			gameObjects.get(values[2]).getObjectRectangle().setLocation(values[0], values[1]);
-		}
-	}
+        while (true) {
 
-	@Override
-	public void start() {
+            while (!isGameActive) {
 
-		while (true) {
+            }
 
-			while (!isGameActive) {
+            notifyObservers(new ModelChangeData(ModelChangeEvents.GAME_START, null));
 
-			}
+            gameStart();
 
-			notifyObservers(ModelChangeEventEnum.GAME_START, null);
+            long doodlerHighestPosition = (long) frog.getObjectRectangle().getY();
 
-			gameStart();
+            while (frog.isObjectAlive()) {
 
-			long doodlerHighestPosition = (long) frog.getObjectRectangle().getY();
+                generateNewObjects();
 
-			while (frog.isObjectAlive()) {
+                notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_MOVE, frog));
 
-				generateNewObjects();
+                //    frog.getObjectRectangle().x, frog.getObjectRectangle().y, (int) frog.getDx());
 
-				notifyObservers(ModelChangeEventEnum.OBJECT_MOVE, ObjectTypeEnum.FROG, frog.getObjectRectangle().x,
-						frog.getObjectRectangle().y, (int) frog.getDx());
+                if (frog.getObjectRectangle().getY() < doodlerHighestPosition) {
+                    userScore += Math.abs(doodlerHighestPosition - frog.getObjectRectangle().getY());
 
-				if (frog.getObjectRectangle().getY() < doodlerHighestPosition) {
-					userScore += Math.abs(doodlerHighestPosition - frog.getObjectRectangle().getY());
+                    doodlerHighestPosition = (long) frog.getObjectRectangle().getY();
+                }
 
-					doodlerHighestPosition = (long) frog.getObjectRectangle().getY();
-				}
+                notifyObservers(new ModelChangeData(ModelChangeEvents.SCORE_CHANGE, null, userScore));
 
-				notifyObservers(ModelChangeEventEnum.SCORE_CHANGE, ObjectTypeEnum.FROG, userScore);
+                doodlerHighestPosition += GameStaticValues.GRAVITY;
 
-				doodlerHighestPosition += this.gameGravity;
+                deleteDeadObjects();
 
-				deleteDeadObjects();
+                for (GameObject gameObject : gameObjects) {
 
-				for (GameObject gameObject : gameObjects) {
+                    notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_MOVE, gameObject,
+                            gameObjects.indexOf(gameObject)));
 
-					notifyObservers(ModelChangeEventEnum.OBJECT_MOVE, gameObject.getObjectType(),
-							gameObject.getObjectRectangle().x, gameObject.getObjectRectangle().y,
-							gameObjects.indexOf(gameObject));
+                    if (gameObject.getObjectRectangle()
+                            .intersectsLine(new Line2D.Double(frog.getObjectRectangle().getX(),
+                                    frog.getObjectRectangle().getMaxY(), frog.getObjectRectangle().getMaxX(),
+                                    frog.getObjectRectangle().getMaxY()))) {
 
-					if (gameObject.getObjectRectangle()
-							.intersectsLine(new Line2D.Double(frog.getObjectRectangle().getX(),
-									frog.getObjectRectangle().getMaxY(), frog.getObjectRectangle().getMaxX(),
-									frog.getObjectRectangle().getMaxY()))) {
 
-						frog.jump();
+                        //  frog.jump();
 
-						switch (gameObject.getObjectType()) {
-						case LEAF:
-							this.userScore += 50;
-							break;
-						case WOOD:
-							this.userScore += 1;
-							break;
-						default:
-							break;
-						}
+                        switch (gameObject.getObjectType()) {
+                            case LEAF:
+                                this.userScore += 50;
+                                break;
+                            case WOOD:
+                                this.userScore += 1;
+                                break;
+                            default:
+                                break;
+                        }
 
-					}
-				}
+                    }
+                }
 
-				try {
-					Thread.sleep(30);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+                try {
+                    Thread.sleep(30);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
 
-			}
+            }
 
-			this.isGameActive = false;
-			notifyObservers(ModelChangeEventEnum.GAME_OVER, null);
+            this.isGameActive = false;
+            notifyObservers(new ModelChangeData(ModelChangeEvents.GAME_OVER, null));
 
-		}
-	}
+        }
+    }
 
 }

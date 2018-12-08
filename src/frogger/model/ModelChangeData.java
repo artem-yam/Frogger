@@ -1,40 +1,28 @@
 package frogger.model;
 
 public class ModelChangeData {
-	private ModelChangeEventEnum changeType = null;
-	private ObjectTypeEnum objectType = null;
-	private int[] affectedValues;
+    private ModelChangeEvents event;
+    private GameObject object;
+    private int[] extraValues;
 
-	public ModelChangeData(ModelChangeEventEnum changeType, ObjectTypeEnum objectType, int... affectedValues) {
-		super();
+    ModelChangeData(ModelChangeEvents event, GameObject object, int... extraValues) {
+        super();
 
-		this.changeType = changeType;
-		this.objectType = objectType;
-		this.affectedValues = affectedValues;
-	}
+        this.event = event;
+        this.object = object;
+        this.extraValues = extraValues;
+    }
 
-	public ModelChangeEventEnum getChangeType() {
-		return changeType;
-	}
+    public ModelChangeEvents getEvent() {
+        return event;
+    }
 
-	public void setChangeType(ModelChangeEventEnum changeType) {
-		this.changeType = changeType;
-	}
+    public GameObject getObject() {
+        return object;
+    }
 
-	public ObjectTypeEnum getObjectType() {
-		return objectType;
-	}
-
-	public void setObjectType(ObjectTypeEnum objectType) {
-		this.objectType = objectType;
-	}
-
-	public int[] getAffectedValues() {
-		return affectedValues;
-	}
-
-	public void setAffectedValues(int[] affectedValues) {
-		this.affectedValues = affectedValues;
-	}
+    public int[] getExtraValues() {
+        return extraValues;
+    }
 
 }
