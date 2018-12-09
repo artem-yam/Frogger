@@ -2,11 +2,15 @@ package frogger.model;
 
 import frogger.utilClasses.GameStaticValues;
 
+import java.awt.*;
+
 public class Frog extends GameObject {
 
     private int remainingJumpDuration = 0;
+    private MoveDirections jumpDirection = null;
+    private Point jumpDestinationPoint = null;
 
-    private boolean isUnbreakable = false;
+    private boolean canJump = true;
 
     public Frog(int x, int y) {
         super(x, y, 0, 0, ObjectTypes.FROG);
@@ -20,21 +24,30 @@ public class Frog extends GameObject {
         this.remainingJumpDuration = remainingJumpDuration;
     }
 
-    public boolean isUnbreakable() {
-        return isUnbreakable;
+    public boolean isCanJump() {
+        return canJump;
     }
 
-    public void setUnbreakable(boolean isUnbreakable) {
-        this.isUnbreakable = isUnbreakable;
+    public void setCanJump(boolean canJump) {
+        this.canJump = canJump;
+    }
+
+    public MoveDirections getJumpDirection() {
+        return jumpDirection;
+    }
+
+    public void setJumpDirection(MoveDirections jumpDirection) {
+        this.jumpDirection = jumpDirection;
     }
 
     @Override
     public void move() {
         super.move();
 
-        if (this.remainingJumpDuration > 0) {
+        if (!this.getObjectRectangle().getLocation().equals(this.jumpDestinationPoint)
+            /* && this.remainingJumpDuration > 0*/) {
             this.remainingJumpDuration--;
-        } else {
+        } else if (!this.canJump) {
             stopMovement();
         }
 
@@ -45,49 +58,65 @@ public class Frog extends GameObject {
             this.getObjectRectangle().y = 0;
         }
 
+
     }
 
     private void stopMovement() {
         this.setDx(0);
-        this.setDy(GameStaticValues.GRAVITY);
+        // this.setDy(GameStaticValues.GRAVITY);
+        this.setDy(0);
+
+        this.canJump = true;
+
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void jump(JumpDirections direction) {
-        if (remainingJumpDuration > 0) {
+    public void jump(MoveDirections direction) {
+
+        if (!this.canJump) {
             return;
         }
 
+        int dx = (int) this.getDx();
+        int dy = (int) this.getDy();
+
+        this.stopMovement();
+        this.canJump = false;
+        //this.remainingJumpDuration = GameStaticValues.FROG_JUMP_DURATION;
+        this.jumpDirection = direction;
+
+
         switch (direction) {
             case LEFT:
-                setDx(-GameStaticValues.FROG_MOVE_SPEED);
+                this.jumpDestinationPoint = new Point(
+                        this.getObjectRectangle().x - GameStaticValues.BLOCK_WIDTH +
+                                GameStaticValues.BLOCK_WIDTH / GameStaticValues.THREAD_SLEEP_TIME * dx,
+                        this.getObjectRectangle().y);
+                this.setDx(this.getDx() - GameStaticValues.FROG_MOVE_SPEED);
                 break;
             case RIGHT:
-                setDx(GameStaticValues.FROG_MOVE_SPEED);
+                this.jumpDestinationPoint = new Point(
+                        this.getObjectRectangle().x + GameStaticValues.BLOCK_WIDTH -
+                                GameStaticValues.BLOCK_WIDTH / GameStaticValues.THREAD_SLEEP_TIME * dx,
+                        this.getObjectRectangle().y);
+                this.setDx(this.getDx() + GameStaticValues.FROG_MOVE_SPEED);
                 break;
             case UP:
-                setDy(-GameStaticValues.FROG_MOVE_SPEED);
+                this.jumpDestinationPoint = new Point(
+                        this.getObjectRectangle().x, this.getObjectRectangle().y - GameStaticValues.BLOCK_HEIGHT);
+                this.setDy(dy - GameStaticValues.FROG_MOVE_SPEED);
                 break;
             case DOWN:
-                setDy(GameStaticValues.FROG_MOVE_SPEED);
+                this.jumpDestinationPoint = new Point(
+                        this.getObjectRectangle().x, this.getObjectRectangle().y + GameStaticValues.BLOCK_HEIGHT);
+                this.setDy(dy + GameStaticValues.FROG_MOVE_SPEED);
                 break;
         }
 
-        remainingJumpDuration = GameStaticValues.DOODLER_JUMP_DURATION;
-    }
-
-    @Override
-    public void run() {
-
-        while (this.isObjectAlive()) {
-
-            this.move();
-
-            try {
-                Thread.sleep(GameStaticValues.THREAD_SLEEP_TIME);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
 }

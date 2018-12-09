@@ -1,5 +1,5 @@
 package frogger.model;
 
-public enum JumpDirections {
+public enum MoveDirections {
 	LEFT, RIGHT, UP, DOWN
 }

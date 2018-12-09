@@ -1,6 +1,8 @@
 package frogger;
 
+import frogger.model.Frog;
 import frogger.model.ModelChangeData;
+import frogger.model.MoveDirections;
 import frogger.model.ObjectTypes;
 import frogger.utilClasses.GameStaticValues;
 import frogger.utilClasses.Observer;
@@ -29,12 +31,18 @@ public class GameView extends JFrame implements Observer, KeyListener {
     public GameView(GameController controller) {
         super();
 
-        this.controller = controller;
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.setResizable(false);
+        GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0];
+        device.setFullScreenWindow(this);
 
-        this.setSize(GameStaticValues.GAME_WINDOW_SIZE);
-        this.setLocation(GameStaticValues.TK.getScreenSize().width / 3, 0);
+        this.controller = controller;
+
+        this.setTitle("Frogger");
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        // this.setUndecorated(false);
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+        //  this.setSize(GameStaticValues.GAME_WINDOW_SIZE);
+        // this.setLocation(GameStaticValues.TK.getScreenSize().width / 3, 0);
 
         this.setVisible(true);
 
@@ -50,7 +58,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
 
         activePanel.setLayout(null);
         activePanel.setVisible(true);
-        activePanel.setBorder(new LineBorder(Color.red));
+        //activePanel.setBorder(new LineBorder(Color.red));
 
         JLabel label = new JLabel();
 
@@ -66,7 +74,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
 
         activePanel.add(label);
 
-        label.setText("Press \"Space\" to start the game");
+        label.setText("Press \n\"Space\" to start the game");
 
         label.setHorizontalAlignment(JLabel.CENTER);
         label.setFont(new Font("Serif", Font.PLAIN, 24));
@@ -103,11 +111,13 @@ public class GameView extends JFrame implements Observer, KeyListener {
                         activePanel.setLayout(null);
                         activePanel.setVisible(true);
                         activePanel.setSize(this.getSize());
+                        activePanel.setBackground(Color.CYAN);
 
-                        icon = new ImageIcon("resourses/images/frog.png");
+                        icon = new ImageIcon("resources/images/frog.png");
 
                         label = new JLabel(icon);
                         frog = label;
+                        frog.setBorder(new LineBorder(Color.red));
 
                         score = new JLabel("0");
                         activePanel.add(score);
@@ -119,21 +129,27 @@ public class GameView extends JFrame implements Observer, KeyListener {
                         break;
                     case WOOD:
 
-                        icon = new ImageIcon("resourses/images/wood.png");
+                        icon = new ImageIcon("resources/images/wood.png");
 
                         label = new JLabel(icon);
 
                         break;
                     case LEAF:
 
-                        icon = new ImageIcon("resourses/images/leaf.png");
+                        icon = new ImageIcon("resources/images/leaf.png");
 
                         label = new JLabel(icon);
 
                         break;
                     case GROUND:
 
-                        icon = new ImageIcon("resourses/images/ground.png");
+                        if (changeData.getExtraValues()[0] == GameStaticValues.START_GROUND_ROWS) {
+                            icon = new ImageIcon("resources/images/ground_up.png");
+                        } else if (changeData.getExtraValues()[0] == 1) {
+                            icon = new ImageIcon("resources/images/ground.png");
+                        } else {
+                            icon = new ImageIcon("resources/images/ground.png");
+                        }
 
                         label = new JLabel(icon);
 
@@ -161,15 +177,43 @@ public class GameView extends JFrame implements Observer, KeyListener {
                     frog.setLocation(changeData.getObject().getObjectRectangle().x,
                             changeData.getObject().getObjectRectangle().y);
 
-                    if (changeData.getObject().getDx() < 0) {
+                    icon = new ImageIcon("resources/images/frog.png");
 
-                        icon = new ImageIcon("resourses/images/doodleL.png");
+                    if (!((Frog) changeData.getObject()).isCanJump()) {
 
-                    } else if (changeData.getObject().getDx() > 0) {
+                        switch (((Frog) changeData.getObject()).getJumpDirection()) {
+                            case LEFT:
+                                icon = new ImageIcon("resources/images/frog_left.png");
+                                break;
+                            case RIGHT:
+                                icon = new ImageIcon("resources/images/frog_right.png");
+                                break;
+                            case UP:
+                                icon = new ImageIcon("resources/images/frog_up.png");
+                                break;
+                            case DOWN:
+                                icon = new ImageIcon("resources/images/frog_up.png");
+                                break;
+                        }
 
-                        icon = new ImageIcon("resourses/images/doodleR.png");
+                       /* if (*//*changeData.getObject().getDx() < 0*//*
+                                ((Frog) changeData.getObject()).getJumpDirection() == MoveDirections.LEFT) {
 
+                            icon = new ImageIcon("resources/images/frog_left.png");
+
+                        } else if (*//*changeData.getObject().getDx() > 0*//*
+                                ((Frog) changeData.getObject()).getJumpDirection() == MoveDirections.RIGHT) {
+
+                            icon = new ImageIcon("resources/images/frog_right.png");
+
+                        } else if (*//*changeData.getObject().getDy() != 0*//*
+                                ((Frog) changeData.getObject()).getJumpDirection() == MoveDirections.UP) {
+
+                            icon = new ImageIcon("resources/images/frog_up.png");
+
+                        }*/
                     }
+
 
                     if (icon != null) {
                         frog.setIcon(icon);
@@ -270,11 +314,18 @@ public class GameView extends JFrame implements Observer, KeyListener {
 
     @Override
     public void keyTyped(KeyEvent e) {
+    }
 
+    @Override
+    public void keyReleased(KeyEvent e) {
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
+
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            controller.exitGame();
+        }
 
         if (!isGameActive) {
             if (e.getKeyCode() == KeyEvent.VK_SPACE) {
@@ -293,14 +344,5 @@ public class GameView extends JFrame implements Observer, KeyListener {
         }
     }
 
-    @Override
-    public void keyReleased(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            //    controller.changeDx(0);
-        } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            //    controller.changeDx(0);
-        } else if (e.getKeyCode() == KeyEvent.VK_UP) {
-            //controller.doodlerStopShoot();
-        }
-    }
+
 }

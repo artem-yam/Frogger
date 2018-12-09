@@ -47,4 +47,8 @@ public class GameController {
         model.setGameActive(true);
     }
 
+    public void exitGame() {
+        System.exit(0);
+    }
+
 }

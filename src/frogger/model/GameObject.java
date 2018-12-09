@@ -6,8 +6,8 @@ import java.awt.*;
 
 public class GameObject extends Thread {
     private Rectangle objectRectangle = null;
-    private int dx = 0;
-    private int dy = 0;
+    private double dx = 0;
+    private double dy = 0;
 
     private boolean isObjectAlive = true;
     private ObjectTypes objectType;
@@ -20,7 +20,7 @@ public class GameObject extends Thread {
     }
 
     public GameObject(int x, int y, int width, int height, ObjectTypes objectType) {
-        this(x, y, width, height, objectType, 0, GameStaticValues.GRAVITY);
+        this(x, y, width, height, objectType, 0, 0);
     }
 
     public Rectangle getObjectRectangle() {
@@ -35,15 +35,15 @@ public class GameObject extends Thread {
         return dx;
     }
 
-    public void setDx(int dx) {
+    public void setDx(double dx) {
         this.dx = dx;
     }
 
-    public int getDy() {
+    public double getDy() {
         return dy;
     }
 
-    public void setDy(int dy) {
+    public void setDy(double dy) {
         this.dy = dy;
     }
 
@@ -61,16 +61,23 @@ public class GameObject extends Thread {
 
 
     public void move() {
-        this.objectRectangle.setLocation(this.objectRectangle.x + dx, this.objectRectangle.y + dy);
+        this.objectRectangle.setLocation(this.objectRectangle.x + (int) dx, this.objectRectangle.y + (int) dy);
 
         if (this.objectRectangle.y >= GameStaticValues.GAME_WINDOW_SIZE.getHeight()) {
-            //this.setObjectAlive(false);
-            this.objectRectangle.y = 0;
+            this.setObjectAlive(false);
         } else {
             if (this.getObjectRectangle().x >= GameStaticValues.GAME_WINDOW_SIZE.getWidth()) {
-                this.getObjectRectangle().x = 0;
+                if (this.getObjectType() == ObjectTypes.FROG) {
+                    this.setObjectAlive(false);
+                } else {
+                    this.getObjectRectangle().x = 0;
+                }
             } else if (this.getObjectRectangle().x <= 0) {
-                this.getObjectRectangle().x = (int) GameStaticValues.GAME_WINDOW_SIZE.getWidth();
+                if (this.getObjectType() == ObjectTypes.FROG) {
+                    this.setObjectAlive(false);
+                } else {
+                    this.getObjectRectangle().x = (int) GameStaticValues.GAME_WINDOW_SIZE.getWidth();
+                }
             }
         }
 

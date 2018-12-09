@@ -4,7 +4,6 @@ import frogger.utilClasses.GameStaticValues;
 import frogger.utilClasses.Observable;
 import frogger.utilClasses.Observer;
 
-import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -49,7 +48,7 @@ public class GameModel extends Thread implements Observable {
 
         initializeVariables();
 
-        this.frog = new Frog(GameStaticValues.DOODLER_START_X, GameStaticValues.DOODLER_START_Y);
+        this.frog = new Frog(GameStaticValues.FROG_START_X, GameStaticValues.FROG_START_Y);
 
         Thread thread = new Thread(frog);
         thread.start();
@@ -59,28 +58,83 @@ public class GameModel extends Thread implements Observable {
 
         gameObjects = new ArrayList<GameObject>();
 
-        formStartGround();
+        formStartBlocks();
     }
 
-    private void formStartGround() {
+    private void formStartBlocks() {
+
         for (int i = 1; i <= GameStaticValues.START_GROUND_ROWS; i++) {
-            formRowOfGround(i);
+            formRowOfBlocks(i, ObjectTypes.GROUND);
+        }
+
+        for (int i = GameStaticValues.START_GROUND_ROWS + 1; i <= GameStaticValues.ROWS_COUNT; i++) {
+            formRowOfBlocks(i, null);
         }
     }
 
 
-    private void formRowOfGround(int rowNumber) {
+    //TODO
+    private void formRowOfBlocks(int rowNumber, ObjectTypes allBlocksType) {
+
+        int blocksCount = 0;
+        int blocksSpeed = 0;
+
+//        if (allBlocksType == ObjectTypes.GROUND) {
+//            blocksCount = GameStaticValues.MAX_BLOCKS_COUNT_IN_ROW;
+//        } else {
+//            blocksCount = GameStaticValues.MIN_BLOCKS_COUNT_IN_ROW + GameStaticValues.RND.nextInt(
+//                    GameStaticValues.MAX_BLOCKS_COUNT_IN_ROW - GameStaticValues.MIN_BLOCKS_COUNT_IN_ROW + 1);
+//        }
+
+        if (allBlocksType != ObjectTypes.GROUND) {
+
+
+            blocksSpeed = (GameStaticValues.RND.nextInt(2 * GameStaticValues.BLOCK_MAX_MOVE_SPEED + 1)
+                    - GameStaticValues.BLOCK_MAX_MOVE_SPEED) * 2;
+        }
+
         for (int i = 0; i < GameStaticValues.MAX_BLOCKS_COUNT_IN_ROW; i++) {
 
-            GameObject ground = new GameObject(i * GameStaticValues.BLOCK_WIDTH,
+            if (blocksCount >= GameStaticValues.MAX_BLOCKS_COUNT_IN_ROW) {
+                return;
+            }
+
+            ObjectTypes blockType = allBlocksType;
+
+
+            if (blockType == null) {
+
+                if (GameStaticValues.RND.nextDouble() > 0.6
+                        || (GameStaticValues.MAX_BLOCKS_COUNT_IN_ROW - i + blocksCount)
+                        > GameStaticValues.MAX_BLOCKS_COUNT_IN_ROW) {
+
+                    blocksCount++;
+
+                    if (GameStaticValues.RND.nextDouble() > 0.7) {
+                        blockType = ObjectTypes.LEAF;
+                    } else {
+                        blockType = ObjectTypes.WOOD;
+                    }
+
+                } else {
+                    continue;
+                }
+
+            } else {
+                blocksCount++;
+            }
+
+            GameObject block = new GameObject(1 + i * GameStaticValues.BLOCK_WIDTH,
                     GameStaticValues.GAME_WINDOW_SIZE.height - rowNumber * GameStaticValues.BLOCK_HEIGHT,
-                    0, 0, ObjectTypes.GROUND);
+                    0, 0, blockType);
 
-            gameObjects.add(ground);
+            block.setDx(blocksSpeed);
 
-            ground.start();
+            gameObjects.add(block);
 
-            notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_СREATE, ground));
+            block.start();
+
+            notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_СREATE, block, rowNumber));
 
         }
     }
@@ -141,19 +195,19 @@ public class GameModel extends Thread implements Observable {
     }
 
     public void frogJumpLeft() {
-        frog.jump(JumpDirections.LEFT);
+        frog.jump(MoveDirections.LEFT);
     }
 
     public void frogJumpRight() {
-        frog.jump(JumpDirections.RIGHT);
+        frog.jump(MoveDirections.RIGHT);
     }
 
     public void frogJumpUp() {
-        frog.jump(JumpDirections.UP);
+        frog.jump(MoveDirections.UP);
     }
 
     public void frogJumpDown() {
-        frog.jump(JumpDirections.DOWN);
+        frog.jump(MoveDirections.DOWN);
     }
 
     public void changeObjectSize(GameObject object, int width, int height) {
@@ -183,6 +237,7 @@ public class GameModel extends Thread implements Observable {
 
                 //    frog.getObjectRectangle().x, frog.getObjectRectangle().y, (int) frog.getDx());
 
+                /*
                 if (frog.getObjectRectangle().getY() < doodlerHighestPosition) {
                     userScore += Math.abs(doodlerHighestPosition - frog.getObjectRectangle().getY());
 
@@ -192,38 +247,45 @@ public class GameModel extends Thread implements Observable {
                 notifyObservers(new ModelChangeData(ModelChangeEvents.SCORE_CHANGE, null, userScore));
 
                 doodlerHighestPosition += GameStaticValues.GRAVITY;
+                */
 
                 deleteDeadObjects();
+
 
                 for (GameObject gameObject : gameObjects) {
 
                     notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_MOVE, gameObject,
                             gameObjects.indexOf(gameObject)));
 
-                    if (gameObject.getObjectRectangle()
-                            .intersectsLine(new Line2D.Double(frog.getObjectRectangle().getX(),
-                                    frog.getObjectRectangle().getMaxY(), frog.getObjectRectangle().getMaxX(),
-                                    frog.getObjectRectangle().getMaxY()))) {
 
+                    if (gameObject.getObjectRectangle().intersects(frog.getObjectRectangle())
+                            && frog.isCanJump()) {
 
-                        //  frog.jump();
+                        frog.setDx(gameObject.getDx() / 2);
 
-                        switch (gameObject.getObjectType()) {
-                            case LEAF:
-                                this.userScore += 50;
-                                break;
-                            case WOOD:
-                                this.userScore += 1;
-                                break;
-                            default:
-                                break;
-                        }
+                        System.out.println("-------------------------");
+                        System.out.println("Frog speed = " + frog.getDx());
+                        System.out.println("Block speed = " + gameObject.getDx());
+                        System.out.println("-------------------------");
 
                     }
+
+                    switch (gameObject.getObjectType()) {
+                        case LEAF:
+                            this.userScore += 50;
+                            break;
+                        case WOOD:
+                            this.userScore += 1;
+                            break;
+                        default:
+                            break;
+                    }
+
                 }
 
+
                 try {
-                    Thread.sleep(30);
+                    Thread.sleep(GameStaticValues.THREAD_SLEEP_TIME);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
