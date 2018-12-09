@@ -2,7 +2,6 @@ package frogger;
 
 import frogger.model.Frog;
 import frogger.model.ModelChangeData;
-import frogger.model.MoveDirections;
 import frogger.model.ObjectTypes;
 import frogger.utilClasses.GameStaticValues;
 import frogger.utilClasses.Observer;
@@ -32,7 +31,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
         super();
 
         GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0];
-        device.setFullScreenWindow(this);
+       // device.setFullScreenWindow(this);
 
         this.controller = controller;
 
@@ -164,6 +163,8 @@ public class GameView extends JFrame implements Observer, KeyListener {
                 }
                 activePanel.add(label);
 
+                //TODO
+                label.setBorder(new LineBorder(Color.MAGENTA));
                 label.setBounds(changeData.getObject().getObjectRectangle().x, changeData.getObject().getObjectRectangle().y,
                         icon.getIconWidth(), icon.getIconHeight());
                 controller.changeObjectSize(changeData.getObject(), icon.getIconWidth(), icon.getIconHeight());
@@ -195,23 +196,6 @@ public class GameView extends JFrame implements Observer, KeyListener {
                                 icon = new ImageIcon("resources/images/frog_up.png");
                                 break;
                         }
-
-                       /* if (*//*changeData.getObject().getDx() < 0*//*
-                                ((Frog) changeData.getObject()).getJumpDirection() == MoveDirections.LEFT) {
-
-                            icon = new ImageIcon("resources/images/frog_left.png");
-
-                        } else if (*//*changeData.getObject().getDx() > 0*//*
-                                ((Frog) changeData.getObject()).getJumpDirection() == MoveDirections.RIGHT) {
-
-                            icon = new ImageIcon("resources/images/frog_right.png");
-
-                        } else if (*//*changeData.getObject().getDy() != 0*//*
-                                ((Frog) changeData.getObject()).getJumpDirection() == MoveDirections.UP) {
-
-                            icon = new ImageIcon("resources/images/frog_up.png");
-
-                        }*/
                     }
 
 

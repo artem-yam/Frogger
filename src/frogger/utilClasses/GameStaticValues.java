@@ -27,15 +27,15 @@ public final class GameStaticValues {
 
     public static int FROG_START_X = BLOCK_WIDTH * MAX_BLOCKS_COUNT_IN_ROW / 2;
     public static int FROG_START_Y = GAME_WINDOW_SIZE.height - FROG_HEIGHT -
-            Math.abs(BLOCK_HEIGHT - FROG_HEIGHT) / 2;
+            Math.abs(BLOCK_HEIGHT - FROG_HEIGHT) / 2 - 1;
 
-    public static int FROG_MOVE_SPEED = 1;
-    public static int FROG_JUMP_DURATION = 50;
+    public static int FROG_MOVE_SPEED = 2;
+    public static int FROG_JUMP_DURATION = 25;
     public static int DOODLER_HORIZONTAL_SPEED = 2;
 
 
-    public static int THREAD_SLEEP_TIME = 10;
+    public static int THREAD_SLEEP_TIME = 20;
 
-    public static int GRAVITY = 1;
+    public static double GRAVITY = 2;
 
 }

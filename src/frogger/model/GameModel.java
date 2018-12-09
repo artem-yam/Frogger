@@ -104,7 +104,7 @@ public class GameModel extends Thread implements Observable {
 
             if (blockType == null) {
 
-                if (GameStaticValues.RND.nextDouble() > 0.6
+                if (GameStaticValues.RND.nextDouble() > 0.5
                         || (GameStaticValues.MAX_BLOCKS_COUNT_IN_ROW - i + blocksCount)
                         > GameStaticValues.MAX_BLOCKS_COUNT_IN_ROW) {
 
@@ -124,8 +124,15 @@ public class GameModel extends Thread implements Observable {
                 blocksCount++;
             }
 
+            int rowsGap = 0;
+
+            if (rowNumber > GameStaticValues.START_GROUND_ROWS) {
+                rowsGap = rowNumber * 2;
+            }
+
             GameObject block = new GameObject(1 + i * GameStaticValues.BLOCK_WIDTH,
-                    GameStaticValues.GAME_WINDOW_SIZE.height - rowNumber * GameStaticValues.BLOCK_HEIGHT,
+                    GameStaticValues.GAME_WINDOW_SIZE.height - rowNumber * GameStaticValues.BLOCK_HEIGHT
+                            - rowNumber * 2,
                     0, 0, blockType);
 
             block.setDx(blocksSpeed);
@@ -250,6 +257,24 @@ public class GameModel extends Thread implements Observable {
                 */
 
                 deleteDeadObjects();
+
+                if (frog.getObjectRectangle().y <
+                        GameStaticValues.GAME_WINDOW_SIZE.height / 2) {
+
+                    // frog.getObjectRectangle().y += GameStaticValues.FROG_HEIGHT;
+                    frog.setGravityActive(true);
+
+
+                    /* notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_MOVE, frog));*/
+
+                    for (GameObject gameObject : gameObjects) {
+                        // gameObject.getObjectRectangle().y += GameStaticValues.BLOCK_HEIGHT;
+                        gameObject.setDy(GameStaticValues.GRAVITY);
+
+                      /*  notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_MOVE, gameObject,
+                                gameObjects.indexOf(gameObject)));*/
+                    }
+                }
 
 
                 for (GameObject gameObject : gameObjects) {

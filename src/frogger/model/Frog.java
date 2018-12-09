@@ -2,13 +2,11 @@ package frogger.model;
 
 import frogger.utilClasses.GameStaticValues;
 
-import java.awt.*;
-
 public class Frog extends GameObject {
 
     private int remainingJumpDuration = 0;
     private MoveDirections jumpDirection = null;
-    private Point jumpDestinationPoint = null;
+    private boolean isGravityActive = false;
 
     private boolean canJump = true;
 
@@ -40,31 +38,23 @@ public class Frog extends GameObject {
         this.jumpDirection = jumpDirection;
     }
 
-    @Override
-    public void move() {
-        super.move();
+    public boolean isGravityActive() {
+        return isGravityActive;
+    }
 
-        if (!this.getObjectRectangle().getLocation().equals(this.jumpDestinationPoint)
-            /* && this.remainingJumpDuration > 0*/) {
-            this.remainingJumpDuration--;
-        } else if (!this.canJump) {
-            stopMovement();
-        }
-
-
-        //TODO
-        if (this.getObjectRectangle().y >= GameStaticValues.GAME_WINDOW_SIZE.getHeight()) {
-            this.setObjectAlive(true);
-            this.getObjectRectangle().y = 0;
-        }
-
-
+    public void setGravityActive(boolean gravityActive) {
+        this.isGravityActive = gravityActive;
+        this.setDy(this.getDy() + GameStaticValues.GRAVITY / 2);
     }
 
     private void stopMovement() {
         this.setDx(0);
-        // this.setDy(GameStaticValues.GRAVITY);
-        this.setDy(0);
+
+        if (this.isGravityActive) {
+            this.setDy(GameStaticValues.GRAVITY / 2);
+        } else {
+            this.setDy(0);
+        }
 
         this.canJump = true;
 
@@ -73,6 +63,28 @@ public class Frog extends GameObject {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+
+    @Override
+    public void move() {
+        super.move();
+
+        if (/*!this.getObjectRectangle().getLocation().equals(this.jumpDestinationPoint)
+             &&*/ this.remainingJumpDuration > 0) {
+            this.remainingJumpDuration--;
+        } else if (!this.canJump) {
+            stopMovement();
+        }
+
+
+        //TODO
+    /*    if (this.getObjectRectangle().y >= GameStaticValues.GAME_WINDOW_SIZE.getHeight()) {
+           this.setObjectAlive(true);
+            this.getObjectRectangle().y = 0;
+        }*/
+
+
     }
 
     public void jump(MoveDirections direction) {
@@ -86,34 +98,28 @@ public class Frog extends GameObject {
 
         this.stopMovement();
         this.canJump = false;
-        //this.remainingJumpDuration = GameStaticValues.FROG_JUMP_DURATION;
+        this.remainingJumpDuration = GameStaticValues.FROG_JUMP_DURATION;
         this.jumpDirection = direction;
 
 
+        int gravityMoveInfluense = 0;
+
+        if (this.isGravityActive) {
+            gravityMoveInfluense = (int) (GameStaticValues.GRAVITY / 2);
+        }
+
         switch (direction) {
             case LEFT:
-                this.jumpDestinationPoint = new Point(
-                        this.getObjectRectangle().x - GameStaticValues.BLOCK_WIDTH +
-                                GameStaticValues.BLOCK_WIDTH / GameStaticValues.THREAD_SLEEP_TIME * dx,
-                        this.getObjectRectangle().y);
-                this.setDx(this.getDx() - GameStaticValues.FROG_MOVE_SPEED);
+                this.setDx(getDx() - GameStaticValues.FROG_MOVE_SPEED);
                 break;
             case RIGHT:
-                this.jumpDestinationPoint = new Point(
-                        this.getObjectRectangle().x + GameStaticValues.BLOCK_WIDTH -
-                                GameStaticValues.BLOCK_WIDTH / GameStaticValues.THREAD_SLEEP_TIME * dx,
-                        this.getObjectRectangle().y);
-                this.setDx(this.getDx() + GameStaticValues.FROG_MOVE_SPEED);
+                this.setDx(getDx() + GameStaticValues.FROG_MOVE_SPEED);
                 break;
             case UP:
-                this.jumpDestinationPoint = new Point(
-                        this.getObjectRectangle().x, this.getObjectRectangle().y - GameStaticValues.BLOCK_HEIGHT);
-                this.setDy(dy - GameStaticValues.FROG_MOVE_SPEED);
+                this.setDy(getDy() - GameStaticValues.FROG_MOVE_SPEED);
                 break;
             case DOWN:
-                this.jumpDestinationPoint = new Point(
-                        this.getObjectRectangle().x, this.getObjectRectangle().y + GameStaticValues.BLOCK_HEIGHT);
-                this.setDy(dy + GameStaticValues.FROG_MOVE_SPEED);
+                this.setDy(getDy() + GameStaticValues.FROG_MOVE_SPEED);
                 break;
         }
 
