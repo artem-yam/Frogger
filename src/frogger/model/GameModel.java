@@ -73,7 +73,7 @@ public class GameModel extends Thread implements Observable {
     }
 
 
-    //TODO
+    //TODO новый ряд блоков  (вроде все норм)
     private void formRowOfBlocks(int rowNumber, ObjectTypes allBlocksType) {
 
         int blocksCount = 0;
@@ -133,7 +133,7 @@ public class GameModel extends Thread implements Observable {
             GameObject block = new GameObject(1 + i * GameStaticValues.BLOCK_WIDTH,
                     GameStaticValues.GAME_WINDOW_SIZE.height - rowNumber * GameStaticValues.BLOCK_HEIGHT
                             - rowNumber * 2,
-                    0, 0, blockType);
+                    GameStaticValues.BLOCK_WIDTH, GameStaticValues.BLOCK_HEIGHT, blockType);
 
             block.setDx(blocksSpeed);
 
@@ -161,37 +161,8 @@ public class GameModel extends Thread implements Observable {
         }
     }
 
-    // TODO
-    private void generateNewBlock(boolean gameStart, boolean isRequired) {
-        GameObject newBlock = null;
 
-        int blockX = GameStaticValues.RND
-                .nextInt((int) GameStaticValues.GAME_WINDOW_SIZE.getWidth() - GameStaticValues.BLOCK_WIDTH);
-
-        int blockY = 0;
-        if (gameStart) {
-
-            blockY = GameStaticValues.RND.nextInt((int) GameStaticValues.GAME_WINDOW_SIZE.getHeight());
-
-        }
-
-        double rnd = GameStaticValues.RND.nextDouble();
-
-        if (rnd < 0.3) {
-            //       newBlock = new GameObject(blockX, blockY, width, height, ObjectTypes.LEAF);
-        } else {
-            //      newBlock = new GameObject(blockX, blockY, width, height, ObjectTypes.WOOD);
-        }
-
-        gameObjects.add(newBlock);
-
-        //    notifyObservers(ModelChangeEvents.OBJECT_СREATE, newBlock.getObject(), blockX, blockY);
-
-        newBlock.start();
-
-    }
-
-    // TODO
+    // TODO генерация новых объектов. находить нужный Х
     private void generateNewObjects() {
         if (GameStaticValues.RND.nextDouble() < 0.05) {
 

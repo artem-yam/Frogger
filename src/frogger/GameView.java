@@ -31,7 +31,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
         super();
 
         GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0];
-       // device.setFullScreenWindow(this);
+        // device.setFullScreenWindow(this);
 
         this.controller = controller;
 
@@ -163,11 +163,11 @@ public class GameView extends JFrame implements Observer, KeyListener {
                 }
                 activePanel.add(label);
 
-                //TODO
+                //TODO убрать border
                 label.setBorder(new LineBorder(Color.MAGENTA));
                 label.setBounds(changeData.getObject().getObjectRectangle().x, changeData.getObject().getObjectRectangle().y,
                         icon.getIconWidth(), icon.getIconHeight());
-                controller.changeObjectSize(changeData.getObject(), icon.getIconWidth(), icon.getIconHeight());
+                //controller.changeObjectSize(changeData.getObject(), icon.getIconWidth(), icon.getIconHeight());
 
 
                 break;
@@ -202,7 +202,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
                     if (icon != null) {
                         frog.setIcon(icon);
                         frog.setSize(icon.getIconWidth(), icon.getIconHeight());
-                        controller.changeObjectSize(changeData.getObject(), icon.getIconWidth(), icon.getIconHeight());
+                        //controller.changeObjectSize(changeData.getObject(), icon.getIconWidth(), icon.getIconHeight());
 
                     }
 

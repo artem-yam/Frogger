@@ -11,7 +11,7 @@ public class Frog extends GameObject {
     private boolean canJump = true;
 
     public Frog(int x, int y) {
-        super(x, y, 0, 0, ObjectTypes.FROG);
+        super(x, y, GameStaticValues.FROG_WIDTH, GameStaticValues.FROG_HEIGHT, ObjectTypes.FROG);
     }
 
     public int getRemainingJumpDuration() {
@@ -78,7 +78,6 @@ public class Frog extends GameObject {
         }
 
 
-        //TODO
     /*    if (this.getObjectRectangle().y >= GameStaticValues.GAME_WINDOW_SIZE.getHeight()) {
            this.setObjectAlive(true);
             this.getObjectRectangle().y = 0;
@@ -101,6 +100,7 @@ public class Frog extends GameObject {
         this.remainingJumpDuration = GameStaticValues.FROG_JUMP_DURATION;
         this.jumpDirection = direction;
 
+        //TODO находить конечную координату после прыжка, проверять по ней
 
         int gravityMoveInfluense = 0;
 
