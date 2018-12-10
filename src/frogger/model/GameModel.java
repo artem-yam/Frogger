@@ -62,33 +62,29 @@ public class GameModel extends Thread implements Observable {
     }
 
     private void formStartBlocks() {
+        int rowYPosition;
 
         for (int i = 1; i <= GameStaticValues.START_GROUND_ROWS; i++) {
-            formRowOfBlocks(i, ObjectTypes.GROUND);
+            rowYPosition = GameStaticValues.GAME_WINDOW_SIZE.height
+                    - i * GameStaticValues.BLOCK_HEIGHT;
+            formRowOfBlocks(rowYPosition, ObjectTypes.GROUND);
         }
 
         for (int i = GameStaticValues.START_GROUND_ROWS + 1; i <= GameStaticValues.ROWS_COUNT; i++) {
-            formRowOfBlocks(i, null);
+            rowYPosition = GameStaticValues.GAME_WINDOW_SIZE.height
+                    - i * GameStaticValues.BLOCK_HEIGHT - (i - GameStaticValues.START_GROUND_ROWS) * GameStaticValues.ROWS_GAP;
+            formRowOfBlocks(rowYPosition, null);
         }
     }
 
-
-    //TODO новый ряд блоков  (вроде все норм)
-    private void formRowOfBlocks(int rowNumber, ObjectTypes allBlocksType) {
+    private void formRowOfBlocks(int yPosition, ObjectTypes allBlocksType) {
 
         int blocksCount = 0;
         int blocksSpeed = 0;
 
-//        if (allBlocksType == ObjectTypes.GROUND) {
-//            blocksCount = GameStaticValues.MAX_BLOCKS_COUNT_IN_ROW;
-//        } else {
-//            blocksCount = GameStaticValues.MIN_BLOCKS_COUNT_IN_ROW + GameStaticValues.RND.nextInt(
-//                    GameStaticValues.MAX_BLOCKS_COUNT_IN_ROW - GameStaticValues.MIN_BLOCKS_COUNT_IN_ROW + 1);
-//        }
-
         if (allBlocksType != ObjectTypes.GROUND) {
 
-
+            //TODO скорость блоков  (изменить, если пофикшу проблему со скоростью лягухи)
             blocksSpeed = (GameStaticValues.RND.nextInt(2 * GameStaticValues.BLOCK_MAX_MOVE_SPEED + 1)
                     - GameStaticValues.BLOCK_MAX_MOVE_SPEED) * 2;
         }
@@ -104,7 +100,7 @@ public class GameModel extends Thread implements Observable {
 
             if (blockType == null) {
 
-                if (GameStaticValues.RND.nextDouble() > 0.5
+                if (GameStaticValues.RND.nextDouble() > 0.6
                         || (GameStaticValues.MAX_BLOCKS_COUNT_IN_ROW - i + blocksCount)
                         > GameStaticValues.MAX_BLOCKS_COUNT_IN_ROW) {
 
@@ -124,15 +120,7 @@ public class GameModel extends Thread implements Observable {
                 blocksCount++;
             }
 
-            int rowsGap = 0;
-
-            if (rowNumber > GameStaticValues.START_GROUND_ROWS) {
-                rowsGap = rowNumber * 2;
-            }
-
-            GameObject block = new GameObject(1 + i * GameStaticValues.BLOCK_WIDTH,
-                    GameStaticValues.GAME_WINDOW_SIZE.height - rowNumber * GameStaticValues.BLOCK_HEIGHT
-                            - rowNumber * 2,
+            GameObject block = new GameObject(1 + i * GameStaticValues.BLOCK_WIDTH, yPosition,
                     GameStaticValues.BLOCK_WIDTH, GameStaticValues.BLOCK_HEIGHT, blockType);
 
             block.setDx(blocksSpeed);
@@ -141,11 +129,25 @@ public class GameModel extends Thread implements Observable {
 
             block.start();
 
-            notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_СREATE, block, rowNumber));
+            notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_СREATE, block));
 
         }
     }
 
+    // TODO generateNewObjects
+    private void generateNewObjects() {
+        int lastRowY = gameObjects.get(gameObjects.size() - 1).getObjectRectangle().y;
+
+        if (lastRowY > 0) {
+            int newRowY = lastRowY - GameStaticValues.BLOCK_HEIGHT - GameStaticValues.ROWS_GAP;
+
+            formRowOfBlocks(newRowY, null);
+        }
+
+    }
+
+
+    //TODO deleteDeadObjects
     private void deleteDeadObjects() {
 
         for (int i = gameObjects.size() - 1; i >= 0; i--) {
@@ -161,16 +163,6 @@ public class GameModel extends Thread implements Observable {
         }
     }
 
-
-    // TODO генерация новых объектов. находить нужный Х
-    private void generateNewObjects() {
-        if (GameStaticValues.RND.nextDouble() < 0.05) {
-
-            //       generateNewBlock(false, isNewPlatformRequired());
-
-        }
-
-    }
 
     public void frogJumpLeft() {
         frog.jump(MoveDirections.LEFT);
@@ -209,6 +201,9 @@ public class GameModel extends Thread implements Observable {
 
             while (frog.isObjectAlive()) {
 
+                boolean isIntersects = false;
+
+                //TODO вход generateNewObjects
                 generateNewObjects();
 
                 notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_MOVE, frog));
@@ -227,17 +222,10 @@ public class GameModel extends Thread implements Observable {
                 doodlerHighestPosition += GameStaticValues.GRAVITY;
                 */
 
+                //TODO deleteDeadObjects раскомментить
                 deleteDeadObjects();
 
-                if (frog.getObjectRectangle().y <
-                        GameStaticValues.GAME_WINDOW_SIZE.height / 2) {
-
-                    // frog.getObjectRectangle().y += GameStaticValues.FROG_HEIGHT;
-                    frog.setGravityActive(true);
-
-
-                    /* notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_MOVE, frog));*/
-
+                if (frog.isGravityActive()) {
                     for (GameObject gameObject : gameObjects) {
                         // gameObject.getObjectRectangle().y += GameStaticValues.BLOCK_HEIGHT;
                         gameObject.setDy(GameStaticValues.GRAVITY);
@@ -245,6 +233,15 @@ public class GameModel extends Thread implements Observable {
                       /*  notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_MOVE, gameObject,
                                 gameObjects.indexOf(gameObject)));*/
                     }
+                } else if (frog.isCanJump() &&
+                        frog.getObjectRectangle().y < GameStaticValues.GAME_WINDOW_SIZE.height / 2) {
+
+                    // frog.getObjectRectangle().y += GameStaticValues.FROG_HEIGHT;
+                    frog.setGravityActive(true);
+
+
+                    /* notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_MOVE, frog));*/
+
                 }
 
 
@@ -257,12 +254,12 @@ public class GameModel extends Thread implements Observable {
                     if (gameObject.getObjectRectangle().intersects(frog.getObjectRectangle())
                             && frog.isCanJump()) {
 
-                        frog.setDx(gameObject.getDx() / 2);
+                        isIntersects = true;
 
-                        System.out.println("-------------------------");
-                        System.out.println("Frog speed = " + frog.getDx());
-                        System.out.println("Block speed = " + gameObject.getDx());
-                        System.out.println("-------------------------");
+                        //TODO скорость лягухи на блоке
+                        frog.setDx(gameObject.getDx() / 2);
+                        // frog.stopMovement();
+                        // frog.setDx(frog.getDx() + gameObject.getDx());
 
                     }
 
@@ -279,6 +276,10 @@ public class GameModel extends Thread implements Observable {
 
                 }
 
+
+                if (frog.isCanJump() && !isIntersects) {
+                    frog.setObjectAlive(false);
+                }
 
                 try {
                     Thread.sleep(GameStaticValues.THREAD_SLEEP_TIME);

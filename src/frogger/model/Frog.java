@@ -7,35 +7,31 @@ public class Frog extends GameObject {
     private int remainingJumpDuration = 0;
     private MoveDirections jumpDirection = null;
     private boolean isGravityActive = false;
+ //   private int jumpPointCoordinate;
 
     private boolean canJump = true;
 
+    //TODO скорость лягухи/2   (можно, если не пофикшу проблему)
+/*    @Override
+    public void setDx(double dx) {
+        super.setDx(dx / 2);
+    }
+
+    @Override
+    public void setDy(double dy) {
+        super.setDy(dy / 2);
+    }*/
+
     public Frog(int x, int y) {
         super(x, y, GameStaticValues.FROG_WIDTH, GameStaticValues.FROG_HEIGHT, ObjectTypes.FROG);
-    }
-
-    public int getRemainingJumpDuration() {
-        return remainingJumpDuration;
-    }
-
-    public void setRemainingJumpDuration(int remainingJumpDuration) {
-        this.remainingJumpDuration = remainingJumpDuration;
     }
 
     public boolean isCanJump() {
         return canJump;
     }
 
-    public void setCanJump(boolean canJump) {
-        this.canJump = canJump;
-    }
-
     public MoveDirections getJumpDirection() {
         return jumpDirection;
-    }
-
-    public void setJumpDirection(MoveDirections jumpDirection) {
-        this.jumpDirection = jumpDirection;
     }
 
     public boolean isGravityActive() {
@@ -65,17 +61,25 @@ public class Frog extends GameObject {
         }
     }
 
-
     @Override
     public void move() {
         super.move();
 
-        if (/*!this.getObjectRectangle().getLocation().equals(this.jumpDestinationPoint)
-             &&*/ this.remainingJumpDuration > 0) {
+
+        if (this.remainingJumpDuration > 0) {
             this.remainingJumpDuration--;
         } else if (!this.canJump) {
             stopMovement();
         }
+/*
+        if (!this.canJump &&
+                ((this.jumpDirection == MoveDirections.LEFT && this.getObjectRectangle().x <= jumpPointCoordinate)
+                        || (this.jumpDirection == MoveDirections.RIGHT && this.getObjectRectangle().x >= jumpPointCoordinate)
+                        || (this.jumpDirection == MoveDirections.UP && this.getObjectRectangle().y <= jumpPointCoordinate)
+                        || (this.jumpDirection == MoveDirections.DOWN && this.getObjectRectangle().y >= jumpPointCoordinate))) {
+            stopMovement();
+        }*/
+
 
 
     /*    if (this.getObjectRectangle().y >= GameStaticValues.GAME_WINDOW_SIZE.getHeight()) {
@@ -92,36 +96,73 @@ public class Frog extends GameObject {
             return;
         }
 
-        int dx = (int) this.getDx();
-        int dy = (int) this.getDy();
+        double dx = this.getDx();
+        double dy = this.getDy();
 
         this.stopMovement();
         this.canJump = false;
-        this.remainingJumpDuration = GameStaticValues.FROG_JUMP_DURATION;
         this.jumpDirection = direction;
 
-        //TODO находить конечную координату после прыжка, проверять по ней
 
-        int gravityMoveInfluense = 0;
+        this.remainingJumpDuration = GameStaticValues.FROG_JUMP_DURATION;
+
+
+        int gravityMoveInfluence = 0;
+     //   int pointOffset = 0;
 
         if (this.isGravityActive) {
-            gravityMoveInfluense = (int) (GameStaticValues.GRAVITY / 2);
+            gravityMoveInfluence = (int) (GameStaticValues.GRAVITY / 2);
+        //    pointOffset = (int) (GameStaticValues.BLOCK_HEIGHT / GameStaticValues.FROG_MOVE_SPEED
+        //            * GameStaticValues.GRAVITY);
         }
 
+
+        //TODO настроить при активации гравитации
         switch (direction) {
             case LEFT:
-                this.setDx(getDx() - GameStaticValues.FROG_MOVE_SPEED);
+            //    jumpPointCoordinate = this.getObjectRectangle().x - GameStaticValues.BLOCK_WIDTH;
+                // this.setDx(getDx() - GameStaticValues.FROG_MOVE_SPEED);
+
+                dx = getDx() - GameStaticValues.FROG_HORIZONTAL_MOVE_SPEED;
+                dy = gravityMoveInfluence;
+
                 break;
             case RIGHT:
-                this.setDx(getDx() + GameStaticValues.FROG_MOVE_SPEED);
+           //     jumpPointCoordinate = this.getObjectRectangle().x + GameStaticValues.BLOCK_WIDTH;
+                //  this.setDx(getDx() + GameStaticValues.FROG_MOVE_SPEED);
+
+                dx = getDx() + GameStaticValues.FROG_HORIZONTAL_MOVE_SPEED;
+                dy = gravityMoveInfluence;
+
                 break;
             case UP:
-                this.setDy(getDy() - GameStaticValues.FROG_MOVE_SPEED);
+
+             //   jumpPointCoordinate = this.getObjectRectangle().y - GameStaticValues.BLOCK_HEIGHT
+             //           - GameStaticValues.ROWS_GAP + pointOffset;
+                //    this.setDy(getDy() - GameStaticValues.FROG_MOVE_SPEED + gravityMoveInfluense);
+
+            //    if (jumpPointCoordinate > this.getObjectRectangle().y) {
+           //         jumpPointCoordinate = this.getObjectRectangle().y;
+           //     }
+
+
+                dx = 0;
+                dy = getDy() - GameStaticValues.FROG_VERTICAL_MOVE_SPEED ;
+
                 break;
             case DOWN:
-                this.setDy(getDy() + GameStaticValues.FROG_MOVE_SPEED);
+            //    jumpPointCoordinate = this.getObjectRectangle().y + GameStaticValues.BLOCK_HEIGHT
+            //            + GameStaticValues.ROWS_GAP + pointOffset;
+                //    this.setDy(getDy() + GameStaticValues.FROG_MOVE_SPEED + gravityMoveInfluense);
+
+                dx = 0;
+                dy = getDy() + GameStaticValues.FROG_VERTICAL_MOVE_SPEED ;
+
                 break;
         }
+
+        this.setDx(dx);
+        this.setDy(dy);
 
     }
 

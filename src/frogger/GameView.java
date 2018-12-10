@@ -3,7 +3,6 @@ package frogger;
 import frogger.model.Frog;
 import frogger.model.ModelChangeData;
 import frogger.model.ObjectTypes;
-import frogger.utilClasses.GameStaticValues;
 import frogger.utilClasses.Observer;
 
 import javax.swing.*;
@@ -18,7 +17,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
     private static final long serialVersionUID = 1L;
 
     private boolean isGameActive = false;
-    private JPanel activePanel = null;
+    private JPanel activePanel;
 
     private JLabel frog = null;
     private JLabel score = null;
@@ -30,8 +29,9 @@ public class GameView extends JFrame implements Observer, KeyListener {
     public GameView(GameController controller) {
         super();
 
+        //TODO fullscreen
         GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0];
-        // device.setFullScreenWindow(this);
+        device.setFullScreenWindow(this);
 
         this.controller = controller;
 
@@ -121,8 +121,12 @@ public class GameView extends JFrame implements Observer, KeyListener {
                         score = new JLabel("0");
                         activePanel.add(score);
 
-                        score.setFont(new Font("Serif", Font.BOLD, 20));
-                        score.setBounds(score.getFont().getSize() / 2, 0, activePanel.getWidth(),
+
+                        score.setBorder(new LineBorder(Color.MAGENTA));
+                        score.setFont(new Font("Serif", Font.BOLD, 50));
+                        score.setHorizontalAlignment(SwingConstants.RIGHT);
+                        score.setBounds((int) (activePanel.getWidth() * 0.01),
+                                0, (int) (activePanel.getWidth() * 0.97),
                                 score.getFont().getSize() * 2);
 
                         break;
@@ -142,13 +146,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
                         break;
                     case GROUND:
 
-                        if (changeData.getExtraValues()[0] == GameStaticValues.START_GROUND_ROWS) {
-                            icon = new ImageIcon("resources/images/ground_up.png");
-                        } else if (changeData.getExtraValues()[0] == 1) {
-                            icon = new ImageIcon("resources/images/ground.png");
-                        } else {
-                            icon = new ImageIcon("resources/images/ground.png");
-                        }
+                        icon = new ImageIcon("resources/images/ground.png");
 
                         label = new JLabel(icon);
 
@@ -164,7 +162,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
                 activePanel.add(label);
 
                 //TODO убрать border
-                label.setBorder(new LineBorder(Color.MAGENTA));
+                //label.setBorder(new LineBorder(Color.MAGENTA));
                 label.setBounds(changeData.getObject().getObjectRectangle().x, changeData.getObject().getObjectRectangle().y,
                         icon.getIconWidth(), icon.getIconHeight());
                 //controller.changeObjectSize(changeData.getObject(), icon.getIconWidth(), icon.getIconHeight());

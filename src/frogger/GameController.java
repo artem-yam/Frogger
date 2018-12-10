@@ -1,7 +1,6 @@
 package frogger;
 
 import frogger.model.GameModel;
-import frogger.model.GameObject;
 import frogger.utilClasses.Observer;
 
 public class GameController {
@@ -37,10 +36,6 @@ public class GameController {
 
     public void jumpDown() {
         model.frogJumpDown();
-    }
-
-    public void changeObjectSize(GameObject object, int width, int height) {
-        model.changeObjectSize(object, width, height);
     }
 
     public void startGame() {
