@@ -122,7 +122,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
                         activePanel.add(score);
 
 
-                        score.setBorder(new LineBorder(Color.MAGENTA));
+                        //score.setBorder(new LineBorder(Color.MAGENTA));
                         score.setFont(new Font("Serif", Font.BOLD, 50));
                         score.setHorizontalAlignment(SwingConstants.RIGHT);
                         score.setBounds((int) (activePanel.getWidth() * 0.01),
