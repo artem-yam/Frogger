@@ -14,7 +14,6 @@ public final class GameStaticValues {
     public static int BLOCK_HEIGHT = 50;
 
     public static int MAX_BLOCKS_COUNT_IN_ROW = (int) Math.ceil(GAME_WINDOW_SIZE.getWidth() / BLOCK_WIDTH);
-    public static int MIN_BLOCKS_COUNT_IN_ROW = MAX_BLOCKS_COUNT_IN_ROW / 10;
     public static int START_GROUND_ROWS = 2;
     public static int ROWS_COUNT = GAME_WINDOW_SIZE.height / GameStaticValues.BLOCK_HEIGHT;
     public static int ROWS_GAP = 3;
