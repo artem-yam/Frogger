@@ -15,6 +15,7 @@ public class GameModel extends Thread implements Observable {
     private List<GameObject> gameObjects = new CopyOnWriteArrayList<GameObject>();
     private int userScore = 0;
 
+    //TODO
     private boolean isGameActive = false;
 
     public GameModel() {
@@ -22,6 +23,7 @@ public class GameModel extends Thread implements Observable {
     }
 
     public void setGameActive(boolean isGameActive) {
+
         this.isGameActive = isGameActive;
     }
 
@@ -66,7 +68,7 @@ public class GameModel extends Thread implements Observable {
 
         for (int i = 1; i <= GameStaticValues.START_GROUND_ROWS; i++) {
             rowYPosition = GameStaticValues.GAME_WINDOW_SIZE.height
-                    - i * GameStaticValues.BLOCK_HEIGHT;
+                    - i * GameStaticValues.BLOCK_HEIGHT - (i - GameStaticValues.START_GROUND_ROWS) * GameStaticValues.ROWS_GAP;
             formRowOfBlocks(rowYPosition, ObjectTypes.GROUND);
         }
 
@@ -190,10 +192,11 @@ public class GameModel extends Thread implements Observable {
         while (true) {
 
             while (!isGameActive) {
-
+                System.out.println(" ");
             }
 
             notifyObservers(new ModelChangeData(ModelChangeEvents.GAME_START, null));
+
 
             gameStart();
 
@@ -202,6 +205,7 @@ public class GameModel extends Thread implements Observable {
             while (frog.isObjectAlive()) {
 
                 boolean isIntersects = false;
+                List<Boolean> intersertions = new ArrayList<Boolean>();
 
                 //TODO вход generateNewObjects
                 generateNewObjects();
@@ -244,34 +248,40 @@ public class GameModel extends Thread implements Observable {
 
                 }
 
-
                 for (GameObject gameObject : gameObjects) {
 
                     notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_MOVE, gameObject,
                             gameObjects.indexOf(gameObject)));
+                }
 
+                if (frog.isCanJump()) {
 
-                    if (gameObject.getObjectRectangle().intersects(frog.getObjectRectangle())
-                            && frog.isCanJump()) {
+                    for (GameObject gameObject : gameObjects) {
 
-                        isIntersects = true;
+                        intersertions.add(gameObject.getObjectRectangle().intersects(frog.getObjectRectangle()));
 
-                        //TODO скорость лягухи на блоке
-                        frog.setDx(gameObject.getDx() / 2);
-                        // frog.stopMovement();
-                        // frog.setDx(frog.getDx() + gameObject.getDx());
+                        if (gameObject.getObjectRectangle().intersects(frog.getObjectRectangle())) {
 
-                    }
+                            isIntersects = true;
 
-                    switch (gameObject.getObjectType()) {
-                        case LEAF:
-                            this.userScore += 50;
-                            break;
-                        case WOOD:
-                            this.userScore += 1;
-                            break;
-                        default:
-                            break;
+                            //TODO скорость лягухи на блоке
+                            frog.setDx(gameObject.getDx() / 2);
+                            // frog.stopMovement();
+                            // frog.setDx(frog.getDx() + gameObject.getDx());
+
+                        }
+
+                        switch (gameObject.getObjectType()) {
+                            case LEAF:
+                                this.userScore += 50;
+                                break;
+                            case WOOD:
+                                this.userScore += 1;
+                                break;
+                            default:
+                                break;
+                        }
+
                     }
 
                 }
