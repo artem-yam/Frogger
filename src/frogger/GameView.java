@@ -7,7 +7,7 @@ import frogger.utilClasses.Observer;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
-import java.awt.*;
+import java.awt.*; 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
 
         this.setVisible(true);
 
-        controller.addObserverToModel(this);
+ 
 
         this.addKeyListener(this);
 
@@ -80,6 +80,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
 
         label.setBounds(0, this.getHeight() / 2, this.getWidth(), label.getFont().getSize() * 2);
 
+        controller.addObserverToModel(this);
     }
 
     public GameController getContr() {
@@ -116,7 +117,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
 
                         label = new JLabel(icon);
                         frog = label;
-                        frog.setBorder(new LineBorder(Color.red));
+                       // frog.setBorder(new LineBorder(Color.red));
 
                         score = new JLabel("0");
                         activePanel.add(score);

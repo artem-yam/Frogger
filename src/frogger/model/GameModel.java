@@ -52,8 +52,8 @@ public class GameModel extends Thread implements Observable {
 
         this.frog = new Frog(GameStaticValues.FROG_START_X, GameStaticValues.FROG_START_Y);
 
-        Thread thread = new Thread(frog);
-        thread.start();
+      //  Thread thread = new Thread(frog);
+    //    thread.start();
         frog.start();
 
         notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_СREATE, this.frog));
@@ -265,7 +265,7 @@ public class GameModel extends Thread implements Observable {
                             isIntersects = true;
 
                             //TODO скорость лягухи на блоке
-                            frog.setDx(gameObject.getDx() / 2);
+                            frog.setDx(gameObject.getDx());
                             // frog.stopMovement();
                             // frog.setDx(frog.getDx() + gameObject.getDx());
 
