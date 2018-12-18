@@ -56,7 +56,7 @@ public class GameModel extends Thread implements Observable {
     //    thread.start();
         frog.start();
 
-        notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_СREATE, this.frog));
+        notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_CREATE, this.frog));
 
         gameObjects = new ArrayList<GameObject>();
 
@@ -133,7 +133,7 @@ public class GameModel extends Thread implements Observable {
 
             block.start();
 
-            notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_СREATE, block));
+            notifyObservers(new ModelChangeData(ModelChangeEvents.OBJECT_CREATE, block));
 
         }
     }

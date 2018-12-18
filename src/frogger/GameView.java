@@ -109,7 +109,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
         JLabel label = null;
 
         switch (changeData.getEvent()) {
-            case OBJECT_СREATE:
+            case OBJECT_CREATE:
 
                 switch (changeData.getObject().getObjectType()) {
                     case FROG:
@@ -276,8 +276,6 @@ public class GameView extends JFrame implements Observer, KeyListener {
 
                 break;
 
-            case LIFE_LOSS:
-                break;
             default:
                 break;
         }
