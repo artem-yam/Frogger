@@ -68,13 +68,15 @@ public class GameModel extends Thread implements Observable {
 
         for (int i = 1; i <= GameStaticValues.START_GROUND_ROWS; i++) {
             rowYPosition = GameStaticValues.GAME_WINDOW_SIZE.height
-                    - i * GameStaticValues.BLOCK_HEIGHT - (i - GameStaticValues.START_GROUND_ROWS) * GameStaticValues.ROWS_GAP;
+                    - i * GameStaticValues.BLOCK_HEIGHT - i * GameStaticValues.ROWS_GAP;
+                //    - i * GameStaticValues.BLOCK_HEIGHT - (i - GameStaticValues.START_GROUND_ROWS) * GameStaticValues.ROWS_GAP;
             formRowOfBlocks(rowYPosition, ObjectTypes.GROUND);
         }
 
         for (int i = GameStaticValues.START_GROUND_ROWS + 1; i <= GameStaticValues.ROWS_COUNT; i++) {
             rowYPosition = GameStaticValues.GAME_WINDOW_SIZE.height
-                    - i * GameStaticValues.BLOCK_HEIGHT - (i - GameStaticValues.START_GROUND_ROWS) * GameStaticValues.ROWS_GAP;
+                    - i * GameStaticValues.BLOCK_HEIGHT - i * GameStaticValues.ROWS_GAP;
+                //    - i * GameStaticValues.BLOCK_HEIGHT - (i - GameStaticValues.START_GROUND_ROWS) * GameStaticValues.ROWS_GAP;
             formRowOfBlocks(rowYPosition, null);
         }
     }
@@ -88,7 +90,7 @@ public class GameModel extends Thread implements Observable {
 
             //TODO скорость блоков  (изменить, если пофикшу проблему со скоростью лягухи)
             blocksSpeed = (GameStaticValues.RND.nextInt(2 * GameStaticValues.BLOCK_MAX_MOVE_SPEED + 1)
-                    - GameStaticValues.BLOCK_MAX_MOVE_SPEED) * 2;
+                    - GameStaticValues.BLOCK_MAX_MOVE_SPEED);
         }
 
         for (int i = 0; i < GameStaticValues.MAX_BLOCKS_COUNT_IN_ROW; i++) {
@@ -200,12 +202,11 @@ public class GameModel extends Thread implements Observable {
 
             gameStart();
 
-            long doodlerHighestPosition = (long) frog.getObjectRectangle().getY();
+            double playerHighestPosition = frog.getObjectRectangle().getY();
 
             while (frog.isObjectAlive()) {
 
                 boolean isIntersects = false;
-                List<Boolean> intersertions = new ArrayList<Boolean>();
 
                 //TODO вход generateNewObjects
                 generateNewObjects();
@@ -214,17 +215,13 @@ public class GameModel extends Thread implements Observable {
 
                 //    frog.getObjectRectangle().x, frog.getObjectRectangle().y, (int) frog.getDx());
 
-                /*
-                if (frog.getObjectRectangle().getY() < doodlerHighestPosition) {
-                    userScore += Math.abs(doodlerHighestPosition - frog.getObjectRectangle().getY());
-
-                    doodlerHighestPosition = (long) frog.getObjectRectangle().getY();
+                //TODO userScore
+                if (frog.isGravityActive()) {
+                    playerHighestPosition += GameStaticValues.GRAVITY;
                 }
 
-                notifyObservers(new ModelChangeData(ModelChangeEvents.SCORE_CHANGE, null, userScore));
 
-                doodlerHighestPosition += GameStaticValues.GRAVITY;
-                */
+
 
                 //TODO deleteDeadObjects раскомментить
                 deleteDeadObjects();
@@ -258,8 +255,6 @@ public class GameModel extends Thread implements Observable {
 
                     for (GameObject gameObject : gameObjects) {
 
-                        intersertions.add(gameObject.getObjectRectangle().intersects(frog.getObjectRectangle()));
-
                         if (gameObject.getObjectRectangle().intersects(frog.getObjectRectangle())) {
 
                             isIntersects = true;
@@ -269,17 +264,28 @@ public class GameModel extends Thread implements Observable {
                             // frog.stopMovement();
                             // frog.setDx(frog.getDx() + gameObject.getDx());
 
-                        }
 
-                        switch (gameObject.getObjectType()) {
-                            case LEAF:
-                                this.userScore += 50;
-                                break;
-                            case WOOD:
-                                this.userScore += 1;
-                                break;
-                            default:
-                                break;
+                            //TODO userScore
+
+                            if (frog.getObjectRectangle().getY() < playerHighestPosition) {
+                              //  userScore += Math.abs(playerHighestPosition - frog.getObjectRectangle().getY());
+
+                                playerHighestPosition = frog.getObjectRectangle().getY();
+
+                                switch (gameObject.getObjectType()) {
+                                    case LEAF:
+                                        this.userScore += 50;
+                                        break;
+                                    case WOOD:
+                                        this.userScore += 1;
+                                        break;
+                                    default:
+                                        break;
+                                }
+
+                                notifyObservers(new ModelChangeData(ModelChangeEvents.SCORE_CHANGE, null, userScore));
+                            }
+
                         }
 
                     }

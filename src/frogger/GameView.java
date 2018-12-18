@@ -7,7 +7,7 @@ import frogger.utilClasses.Observer;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
-import java.awt.*; 
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
@@ -37,6 +37,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
 
         this.setTitle("Frogger");
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.setResizable(false);
         // this.setUndecorated(false);
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
@@ -45,7 +46,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
 
         this.setVisible(true);
 
- 
+
 
         this.addKeyListener(this);
 
@@ -59,37 +60,48 @@ public class GameView extends JFrame implements Observer, KeyListener {
         activePanel.setVisible(true);
         //activePanel.setBorder(new LineBorder(Color.red));
 
-        JLabel label = new JLabel();
 
-        activePanel.add(label);
+        JLabel label = addLabelWithTextToPanel("Frogger", 32, this.getHeight() / 5);
 
-        label.setText("Frogger");
-        label.setHorizontalAlignment(JLabel.CENTER);
-        label.setFont(new Font("Serif", Font.BOLD, 32));
 
-        label.setBounds(0, this.getHeight() / 4, this.getWidth(), label.getFont().getSize() * 2);
+        String rulesLabelText = "Правила игры :";
+        int rulesFontSize = 20;
+        String labelText1 = "Вы играете за лягушку, ваша цель - забраться как можно дальше от начального острова, двигаясь по блокам вверх. ";
+        String labelText2 = "При прыжке на новый ряд блоков вы получаете очки : 50 если вы прыгнули на лист, 1 - если на бревно. ";
+        String labelText3 = "Через какое-то время блоки на экране начинают смещаться вниз, увеличавая сложность. ";
+        String labelText4 = "Игра заканчивается, если вы оказались за нижней гранец экрана или после прыжка не коснулись никакого блока. " ;
+        String labelText5 = "Для выхода из игры нажмите \"Escape\". ";
 
-        label = new JLabel();
+        label = addLabelWithTextToPanel(rulesLabelText, 24, label.getLocation().y + label.getFont().getSize() * 3);
+        label = addLabelWithTextToPanel(labelText1, rulesFontSize, label.getLocation().y + label.getFont().getSize() * 2);
+        label = addLabelWithTextToPanel(labelText2, rulesFontSize, label.getLocation().y + label.getFont().getSize() * 2);
+        label = addLabelWithTextToPanel(labelText3, rulesFontSize, label.getLocation().y + label.getFont().getSize() * 2);
+        label = addLabelWithTextToPanel(labelText4, rulesFontSize, label.getLocation().y + label.getFont().getSize() * 2);
+        label = addLabelWithTextToPanel(labelText5, rulesFontSize, label.getLocation().y + label.getFont().getSize() * 2);
 
-        activePanel.add(label);
 
-        label.setText("Press \n\"Space\" to start the game");
+        addLabelWithTextToPanel("Нажмите \n\"Space\", чтобы начать игру", 24,
+                label.getLocation().y + label.getFont().getSize() * 4);
 
-        label.setHorizontalAlignment(JLabel.CENTER);
-        label.setFont(new Font("Serif", Font.PLAIN, 24));
-
-        label.setBounds(0, this.getHeight() / 2, this.getWidth(), label.getFont().getSize() * 2);
 
         controller.addObserverToModel(this);
     }
 
-    public GameController getContr() {
-        return controller;
+    private JLabel addLabelWithTextToPanel(String labelText, int fontSize, int labelYPosition) {
+        JLabel label = new JLabel();
+
+        activePanel.add(label);
+
+        label.setText(labelText);
+
+        label.setHorizontalAlignment(JLabel.CENTER);
+        label.setFont(new Font("Serif", Font.PLAIN, fontSize));
+
+        label.setBounds(0, labelYPosition, this.getWidth(), label.getFont().getSize() * 2);
+
+        return label;
     }
 
-    public void setContr(GameController contr) {
-        this.controller = contr;
-    }
 
     @Override
     public void handleEvent(ModelChangeData changeData) {
@@ -158,6 +170,7 @@ public class GameView extends JFrame implements Observer, KeyListener {
 
 
                 if (changeData.getObject().getObjectType() != ObjectTypes.FROG) {
+                    //label.setBorder(new LineBorder(Color.MAGENTA));
                     blocks.add(label);
                 }
                 activePanel.add(label);
@@ -253,37 +266,13 @@ public class GameView extends JFrame implements Observer, KeyListener {
                 activePanel.setVisible(true);
                 activePanel.setSize(this.getSize());
 
-                activePanel.setBorder(new LineBorder(Color.red));
+                //activePanel.setBorder(new LineBorder(Color.red));
 
-                label = new JLabel();
 
-                activePanel.add(label);
+                label =  addLabelWithTextToPanel("Игра закончена", 24, this.getHeight() / 4);
+                label =  addLabelWithTextToPanel("Ваш счёт = " + score.getText(), 24, label.getLocation().y + label.getFont().getSize() * 3);
+                addLabelWithTextToPanel("Нажмите \"Space\", чтобы начать заново", 24, label.getLocation().y + label.getFont().getSize() * 3);
 
-                label.setText("Game over");
-
-                label.setHorizontalAlignment(JLabel.CENTER);
-                label.setFont(new Font("Serif", Font.BOLD, 24));
-                label.setBounds(0, this.getHeight() / 4, this.getWidth(), label.getFont().getSize() * 2);
-
-                label = new JLabel();
-
-                activePanel.add(label);
-
-                label.setText("Your score = " + score.getText());
-                label.setHorizontalAlignment(JLabel.CENTER);
-                label.setFont(new Font("Serif", Font.PLAIN, 24));
-
-                label.setBounds(0, this.getHeight() / 3, this.getWidth(), label.getFont().getSize() * 2);
-
-                label = new JLabel();
-
-                activePanel.add(label);
-
-                label.setText("Press \"Space\" to restart the game");
-                label.setHorizontalAlignment(JLabel.CENTER);
-                label.setFont(new Font("Serif", Font.PLAIN, 24));
-
-                label.setBounds(0, this.getHeight() / 2, this.getWidth(), label.getFont().getSize() * 2);
 
                 break;
 

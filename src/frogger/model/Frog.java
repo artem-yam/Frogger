@@ -14,7 +14,7 @@ public class Frog extends GameObject {
 	// TODO скорость лягухи/2 (можно, если не пофикшу проблему)
 	/*
 	 * @Override public void setDx(double dx) { super.setDx(dx / 2); }
-	 * 
+	 *
 	 * @Override public void setDy(double dy) { super.setDy(dy / 2); }
 	 */
 
@@ -61,7 +61,7 @@ public class Frog extends GameObject {
 	public void move() {
 		super.move();
 
-		if (this.remainingJumpDuration > 0) {
+		if (this.remainingJumpDuration > 1) {
 			this.remainingJumpDuration--;
 		} else if (!this.canJump) {
 			stopMovement();
@@ -125,7 +125,7 @@ public class Frog extends GameObject {
 			// GameStaticValues.BLOCK_WIDTH;
 			// this.setDx(getDx() - GameStaticValues.FROG_MOVE_SPEED);
 
-			dx = getDx() - GameStaticValues.FROG_HORIZONTAL_MOVE_SPEED;
+			dx -= GameStaticValues.FROG_HORIZONTAL_MOVE_SPEED;
 			dy = gravityMoveInfluence;
 
 			break;
@@ -134,7 +134,7 @@ public class Frog extends GameObject {
 			// GameStaticValues.BLOCK_WIDTH;
 			// this.setDx(getDx() + GameStaticValues.FROG_MOVE_SPEED);
 
-			dx = getDx() + GameStaticValues.FROG_HORIZONTAL_MOVE_SPEED;
+			dx += GameStaticValues.FROG_HORIZONTAL_MOVE_SPEED;
 			dy = gravityMoveInfluence;
 
 			break;
@@ -151,7 +151,7 @@ public class Frog extends GameObject {
 			// }
 
 			dx = 0;
-			dy = getDy() - GameStaticValues.FROG_VERTICAL_MOVE_SPEED;
+			dy = gravityMoveInfluence - GameStaticValues.FROG_VERTICAL_MOVE_SPEED;
 
 			break;
 		case DOWN:
@@ -162,7 +162,7 @@ public class Frog extends GameObject {
 			// gravityMoveInfluense);
 
 			dx = 0;
-			dy = getDy() + GameStaticValues.FROG_VERTICAL_MOVE_SPEED;
+			dy = gravityMoveInfluence + GameStaticValues.FROG_VERTICAL_MOVE_SPEED;
 
 			break;
 		}
